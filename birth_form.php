@@ -335,13 +335,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <!-- Options will be dynamically populated using JavaScript -->
                                     <?php 
                                         // Establish a database connection (replace these values with your database credentials)
-                                       $servername = "localhost";
-                                        $username = "root";
-                                        $password = "";
-                                        $dbname = "civ_reg";
-                                                              
-                                        // Create a connection
-                                        $conn = new mysqli($servername, $username, $password, $dbname);
+                                      require_once __DIR__ . '/db.php';
 
                                         // Check the connection
                                         if ($conn->connect_error) {
