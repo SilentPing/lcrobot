@@ -355,12 +355,9 @@
                       <select id="province" class="form-select form-select-lg" name="province" required>
                         <option value="">Select Province</option>
                         <?php 
-                          // Establish a database connection (replace these values with your database credentials)
-                          $servername = "localhost";
-                          $username = "root";
-                          $password = "";
-                          $dbname = "civ_reg";
-                            					          
+
+                          require_once __DIR__ . '/db.php';
+
                           // Create a connection
                           $conn = new mysqli($servername, $username, $password, $dbname);
 
