@@ -1,0 +1,38 @@
+
+                        if (isset($_POST['approve_btn'])) {
+                            $request_id = $_POST['request_id'];
+                            // $id_user = $_POST['id_user']; // Retrieve the user ID associated with the request
+                            // $status = 'Approved'; // Set the status to 'Approved'
+
+                            // Move the request to the 'approved_requests' table
+                            $moveToApprovedSql = "INSERT INTO approved_requests (registration_date, registrar_name, type_request, status) SELECT registration_date, registrar_name, type_request, 'Approved' FROM reqtracking_tbl WHERE request_id = $request_id";
+                            if ($conn->query($moveToApprovedSql) === TRUE) {
+                                // Update the 'status' in the 'reqtracking_tbl' to 'Approved'
+                                $updateStatusSql = "UPDATE reqtracking_tbl SET status = 'Approved' WHERE request_id = $request_id";
+                                $conn->query($updateStatusSql);
+
+                                // Delete the request from the 'manage_request' table
+                                $deleteRequestSql = "DELETE FROM reqtracking_tbl WHERE request_id = $request_id";
+                                $conn->query($deleteRequestSql);
+
+                                // $notificationSql = "INSERT INTO notifications (message, timestamp) VALUES ('Your request has been " . ($status == 'Approved' ? "approved" : "rejected") . "', NOW())";
+                                //     $con->query($notificationSql);
+                            }
+                        }
+
+
+                       if (isset($_POST['reject_btn'])) {
+                            $request_id = $_POST['request_id'];
+
+                            // Move the request to the 'rejected_requests' table
+                            $moveToRejectedSql = "INSERT INTO rejected_requests (registration_date, registrar_name, type_request, status) SELECT registration_date, registrar_name, type_request, 'Rejected' FROM reqtracking_tbl WHERE request_id = $request_id";
+                            if ($conn->query($moveToRejectedSql) === TRUE) {
+                                // Update the 'status' in the 'reqtracking_tbl' to 'Rejected'
+                                $updateStatusSql = "UPDATE reqtracking_tbl SET status = 'Rejected' WHERE request_id = $request_id";
+                                $conn->query($updateStatusSql);
+
+                                // Delete the request from the 'manage_request' table
+                                $deleteRequestSql = "DELETE FROM reqtracking_tbl WHERE request_id = $request_id";
+                                $conn->query($deleteRequestSql);
+                            }
+                        }

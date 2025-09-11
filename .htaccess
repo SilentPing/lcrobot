@@ -1,0 +1,21 @@
+# Main .htaccess file for Civil Registry System
+
+# Prevent access to sensitive files
+<Files ".env">
+    Require all denied
+</Files>
+
+<Files "config.php">
+    Require all denied
+</Files>
+
+<Files "crypto.php">
+    Require all denied
+</Files>
+
+<Files "*.sql">
+    Require all denied
+</Files>
+
+# Prevent directory listing
+Options -Indexes

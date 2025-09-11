@@ -1,0 +1,5 @@
+# Deny access to PHPMailer files
+Require all denied
+
+# Prevent directory listing
+Options -Indexes

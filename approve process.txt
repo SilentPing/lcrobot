@@ -1,0 +1,308 @@
+<?php
+include('includes/header.php'); 
+include('includes/navbar.php');
+?>
+
+
+<div class="container-fluid">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-file-text-fill"></i> Civil Requests</h6>
+        </div>
+
+        <style>
+            .approved-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 100px; /* Adjust the width as needed */
+            height: 100px; /* Adjust the height as needed */
+            z-index: 9999; /* Ensure it's above other elements */
+        }
+
+         .reject-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 140px; /* Adjust the width as needed */
+            height: 140px; /* Adjust the height as needed */
+            z-index: 9999; /* Ensure it's above other elements */
+        }
+        </style>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Registration Date</th>
+                            <th>Registrar Name</th>
+                            <th>Type of Request</th>
+                            <th>Contact Number</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        require('db.php'); 
+
+                        if(isset($_POST['send_sms_btn'])) {
+                            $approvedRequestId = $_POST['request_id'];
+
+                            // Update status in the original table
+                            $queryUpdateStatus = "UPDATE reqtracking_tbl SET status = 'Approved' WHERE request_id = $approvedRequestId";
+                            $queryUpdateStatusRun = mysqli_query($conn, $queryUpdateStatus);
+
+                            if (!$queryUpdateStatusRun) {
+                                die("Query to update status failed: " . mysqli_error($conn));
+                            }
+
+                            // Fetch the approved request details from the original table
+                            $queryFetchApprovedRequest = "SELECT * FROM reqtracking_tbl WHERE request_id = $approvedRequestId";
+                            $resultFetchApprovedRequest = mysqli_query($conn, $queryFetchApprovedRequest);
+
+                            if (!$resultFetchApprovedRequest) {
+                                die("Query to fetch approved request details failed: " . mysqli_error($conn));
+                            }
+
+                            // Insert the approved request into the separate table
+                            if ($rowApprovedRequest = mysqli_fetch_assoc($resultFetchApprovedRequest)) {
+                                $queryInsertApprovedRequest = "INSERT INTO approved_requests (registration_date, registrar_name, type_request, status)
+                                                              VALUES ('{$rowApprovedRequest['registration_date']}', '{$rowApprovedRequest['registrar_name']}', '{$rowApprovedRequest['type_request']}', 'Approved')";
+                                $queryInsertApprovedRequestRun = mysqli_query($conn, $queryInsertApprovedRequest);
+
+                                if (!$queryInsertApprovedRequestRun) {
+                                    die("Query to insert approved request failed: " . mysqli_error($conn));
+                                }
+                            }
+
+                            // Add your code to send SMS notification
+                            include('sms.php');
+                        }
+
+
+                        // Check if the connection is successful
+                        if (!$conn) {
+                            die("Connection failed: " . mysqli_connect_error());
+                        }
+
+                        $query = "SELECT * FROM reqtracking_tbl WHERE status != 'Approved'";
+                        $query_run = mysqli_query($conn, $query);
+
+                        // Check if the query was executed successfully
+                        if (!$query_run) {
+                            die("Query failed: " . mysqli_error($con));
+                        }
+
+                        $row_number = 1;
+
+                        if (mysqli_num_rows($query_run) > 0) {
+                            while ($row = mysqli_fetch_assoc($query_run)) {
+                                $id_user = $row['user_id'];
+                                $query1= "SELECT * FROM users WHERE id_user = $id_user";
+                                $query_run1 = mysqli_query($conn, $query1);
+                                $row1 = mysqli_fetch_assoc($query_run1)
+                                ?>
+                                <tr>
+                                    <td><?php echo $row_number; ?></td>
+                                    <td><?php echo $row['registration_date']; ?></td>
+                                    <td><?php echo $row['registrar_name']; ?></td>
+                                    <td><?php echo $row['type_request']; ?></td>
+                                    <td><?php echo $row1['contact_no']; ?></td>
+                                    <td><?php echo $row1['email']; ?></td>
+                                    <td><?php echo $row['status']; ?></td>
+                                   <td>
+                                    <form action="" method="post">
+                                        <input type="hidden" name="request_id" value="<?php echo $row['request_id']; ?>">
+                                        <button type="submit" name="send_sms_btn" class="btn btn-success approve-button" data-bs-toggle="modal" data-bs-target="#approveModal_<?php echo $row['request_id']; ?>">Approve</button>
+                                        <!-- Approve Modal -->
+                                        <div class="modal fade" id="approveModal_<?php echo $row['request_id']; ?>" tabindex="-1" aria-labelledby="approveModalLabel_<?php echo $row['request_id']; ?>" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h1 class="modal-title fs-5" id="approveModalLabel_<?php echo $row['request_id']; ?>">Approve Request</h1>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <!-- Content for the approve modal -->
+                                                        <img src="images/approve.png" alt="Approved Badge" class="approved-badge">
+                                                        <p><strong>Registrant Name:</strong> <?php echo $row['registrar_name']; ?></p>
+                                                        <p><strong>Type of Request:</strong> <?php echo $row['type_request']; ?></p>
+                                                        <p><strong>Contact Number:</strong> <?php echo $row1['contact_no']; ?></p>
+                                                        <input type="hidden" name="contact_no" value="<?php echo $row1['contact_no']; ?>">
+                                                        <textarea class="form-control" rows="4" name="sms_message" placeholder="Enter SMS message">Good Day <?php echo $row['registrar_name']; ?>! Your Request Has Been Successfully Approved, Civil Documents Requested <?php echo $row['type_request']; ?>!</textarea>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button type="submit" class="btn btn-primary" name="send_sms_btn">Send</button>
+                                                    </div>
+                                                 </div>
+                                              </div>
+                                          </div>
+                                       </form>
+
+                                    <form action="request_reject.php" method="post">
+                                         <button type="button" name="reject_btn" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal_<?php echo $row['request_id']; ?>">Reject</button>
+                                    <div class="modal fade" id="rejectModal_<?php echo $row['request_id']; ?>" tabindex="-1" aria-labelledby="rejectModalLabel_<?php echo $row['request_id']; ?>" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h1 class="modal-title fs-5" id="rejectModalLabel_<?php echo $row['request_id']; ?>">Reject Request</h1>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <!-- Content for the reject modal -->
+                                                            <img src="images/reject1.png" alt="Rejected Badge" class="reject-badge">
+                                                            <p><strong>Registrant Name:</strong> <?php echo $row['registrar_name']; ?></p>
+                                                            <p><strong>Type of Request:</strong> <?php echo $row['type_request']; ?></p>
+                                                            <input type="hidden" name="registrarName" value="<?php echo $row['registrar_name']; ?>">
+                                                            <input type="hidden" name="typeOfRequest" value="<?php echo $row['type_request']; ?>">
+                                                            <p><strong>Email:</strong> <?php echo $row1['email']; ?></p>
+                                                            <input type="hidden" name="email" value="<?php echo $row1['email']; ?>">
+                                                            <textarea class="form-control" rows="4" name="rejectionReason" placeholder="Enter Rejection message">Ampon ka!</textarea>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            <button type="submit" class="btn btn-primary" name="rejectEmail">Send</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                             </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <?php
+                                $row_number++;
+                            }
+                        } else {
+                            echo "No Record Found";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to handle form submission
+    function handleFormSubmit(requestId) {
+        // Get the form data
+        var formData = new FormData(document.getElementById('form_' + requestId));
+
+        // Perform AJAX submission
+        $.ajax({
+            type: 'POST',
+            url: 'manage_request.php', // Correct the file name to process the approval logic
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                // Handle the response if needed
+                console.log(response);
+
+                // Close the modal after sending SMS
+                $('#approveModal_' + requestId).modal('hide');
+
+                // You can add additional logic here if needed
+            }
+        });
+    }
+
+    // Add click event listener to "Send" button inside the modal
+    $('.approve-button').on('click', function(event) {
+        event.preventDefault(); // Prevent the default form submission behavior
+
+        var requestId = $(this).data('request-id');
+
+        // Open the modal
+        $('#approveModal_' + requestId).modal('show');
+
+        // Add click event listener to the "Submit" button inside the modal
+        $('#submitBtn_' + requestId).on('click', function() {
+            // Call the function to handle form submission
+            handleFormSubmit(requestId);
+        });
+    });
+});
+</script>
+
+<!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; MCRO 2023</span>
+                    </div>
+                </div>
+            </footer>
+
+    <?php
+// Check if the Send SMS button is clicked within the modal
+if (isset($_POST['send_sms_btn'])) {
+    // Retrieve the phone number of the registrant from the database or wherever it's stored
+    $phone_number = $_POST['contact_no']; // Replace this with the appropriate phone number retrieval method
+
+    // Retrieve the SMS message from the form textarea
+    $sms_message = $_POST['sms_message'];
+
+    // Your Semaphore API Key
+    $api_key = '3b0a653cc759c73537ac5e57bf133e8c'; // Replace this with your Semaphore API key
+
+    // Semaphore API Endpoint
+    $api_url = 'https://semaphore.co/api/v4/messages';
+
+    // Sender Name (Optional)
+    $sender_name = 'BOTOLANMCRO'; // Replace this with your desired sender name
+
+    // Initialize cURL session
+    $ch = curl_init();
+
+    // Set parameters for sending SMS
+    $parameters = array(
+        'apikey' => $api_key,
+        'number' => $phone_number,
+        'message' => $sms_message,
+        'sendername' => $sender_name
+    );
+
+    // Set cURL options
+    curl_setopt($ch, CURLOPT_URL, $api_url);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($parameters));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    // Execute cURL request
+    $output = curl_exec($ch);
+
+    // Check for errors and handle the response from Semaphore
+    if ($output === FALSE) {
+        echo "Error: " . curl_error($ch);
+    } else {
+        // Handle the response from Semaphore (you might want to log or process this response
+            echo "<script>
+            Swal.fire({
+              title: 'Message sent!',
+              text: 'Message sent to $phone_number',
+              icon: 'success',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              window.location.href = 'manage_request.php';
+            });
+            </script>"; " . $output . <br>";
+
+                }
+
+    // Close cURL session
+    curl_close($ch);
+}
+?>
+
+<?php
+include('includes/script.php');
+include('includes/footer.php');
+?>

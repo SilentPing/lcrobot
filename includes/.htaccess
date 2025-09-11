@@ -1,0 +1,5 @@
+# Deny access to include files
+Require all denied
+
+# Prevent directory listing
+Options -Indexes
