@@ -48,6 +48,25 @@ include('includes/navbar.php');
                         if ($query_run && mysqli_num_rows($query_run) > 0) {
                             $row_number = 1;
                             while ($row = mysqli_fetch_assoc($query_run)) {
+                                // Check if user has email in users table (for registered users)
+                                $display_email = $row['email'];
+                                if (empty($display_email) && !empty($row['contact_no'])) {
+                                    // Try to find user by contact number to get their email
+                                    $userQuery = "SELECT email FROM users WHERE contact_no = ? LIMIT 1";
+                                    $stmt = $conn->prepare($userQuery);
+                                    $stmt->bind_param("s", $row['contact_no']);
+                                    $stmt->execute();
+                                    $userResult = $stmt->get_result();
+                                    if ($userResult->num_rows > 0) {
+                                        $userRow = $userResult->fetch_assoc();
+                                        $display_email = !empty($userRow['email']) ? $userRow['email'] : 'Not provided';
+                                    } else {
+                                        $display_email = 'Not provided';
+                                    }
+                                    $stmt->close();
+                                } else {
+                                    $display_email = !empty($display_email) ? $display_email : 'Not provided';
+                                }
                                 ?>
                                 <tr>
                                     <td><?php echo $row_number; ?></td>
@@ -55,7 +74,7 @@ include('includes/navbar.php');
                                     <td><?php echo $row['registrar_name']; ?></td>
                                     <td><?php echo $row['type_request']; ?></td>
                                     <td><?php echo $row['contact_no']; ?></td>
-                                    <td><?php echo !empty($row['email']) ? $row['email'] : 'Not provided'; ?></td>
+                                    <td><?php echo $display_email; ?></td>
                                     <td><?php echo date('Y-m-d H:i:s', strtotime($row['released_date'])); ?></td>
                                     <td><?php echo $row['released_by']; ?></td>
                                     <td><span class="badge bg-info"><?php echo $row['status']; ?></span></td>

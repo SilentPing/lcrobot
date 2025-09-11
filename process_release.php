@@ -43,27 +43,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         $stmt->close();
         
-        // If no contact info found in reqtracking_tbl and user_id is 0, try to find correct user_id from birthceno_tbl
+        // If no contact info found in reqtracking_tbl and user_id is 0, try to find correct user_id by contact number
         if ((empty($contact_no) || empty($email)) && $user_id == 0) {
-            // Split the registrar_name to get first and last name
-            $name_parts = explode(' ', $registrar_name);
-            $first_name = $name_parts[0];
-            $last_name = end($name_parts);
-            
-            $birthQuery = "SELECT id_user FROM birthceno_tbl WHERE firstname = ? AND lastname = ? LIMIT 1";
-            $stmt = $conn->prepare($birthQuery);
-            $stmt->bind_param("ss", $first_name, $last_name);
-            $stmt->execute();
-            $birthResult = $stmt->get_result();
-            if ($birthResult->num_rows > 0) {
-                $birthRow = $birthResult->fetch_assoc();
-                $actual_user_id = $birthRow['id_user'];
+            // First try to find user by contact number (more reliable than name matching)
+            if (!empty($contact_no)) {
+                $userQuery = "SELECT id_user, email FROM users WHERE contact_no = ? LIMIT 1";
+                $stmt = $conn->prepare($userQuery);
+                $stmt->bind_param("s", $contact_no);
+                $stmt->execute();
+                $userResult = $stmt->get_result();
+                if ($userResult->num_rows > 0) {
+                    $userRow = $userResult->fetch_assoc();
+                    $actual_user_id = $userRow['id_user'];
+                    $email = $email ?: (!empty($userRow['email']) ? $userRow['email'] : '');
+                }
+                $stmt->close();
             }
-            $stmt->close();
+            
+            // If still no user found, try name matching as fallback
+            if ($actual_user_id == 0) {
+                $name_parts = explode(' ', $registrar_name);
+                $first_name = $name_parts[0];
+                $last_name = end($name_parts);
+                
+                $birthQuery = "SELECT id_user FROM birthceno_tbl WHERE firstname = ? AND lastname = ? LIMIT 1";
+                $stmt = $conn->prepare($birthQuery);
+                $stmt->bind_param("ss", $first_name, $last_name);
+                $stmt->execute();
+                $birthResult = $stmt->get_result();
+                if ($birthResult->num_rows > 0) {
+                    $birthRow = $birthResult->fetch_assoc();
+                    $actual_user_id = $birthRow['id_user'];
+                }
+                $stmt->close();
+            }
         }
         
         // Get contact info from users table using the correct user_id
-        if (empty($contact_no) && $actual_user_id > 0) {
+        if (empty($email) && $actual_user_id > 0) {
             $userQuery = "SELECT contact_no, email FROM users WHERE id_user = ?";
             $stmt = $conn->prepare($userQuery);
             $stmt->bind_param("i", $actual_user_id);
