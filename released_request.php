@@ -51,8 +51,8 @@ include('includes/navbar.php');
                                 // Check if user has email in users table (for registered users)
                                 $display_email = $row['email'];
                                 if (empty($display_email) && !empty($row['contact_no'])) {
-                                    // Try to find user by contact number to get their email
-                                    $userQuery = "SELECT email FROM users WHERE contact_no = ? LIMIT 1";
+                                    // Try to find user by contact number (prioritize regular users over admins)
+                                    $userQuery = "SELECT email, usertype FROM users WHERE contact_no = ? ORDER BY CASE WHEN usertype = 'user' THEN 1 ELSE 2 END, id_user ASC LIMIT 1";
                                     $stmt = $conn->prepare($userQuery);
                                     $stmt->bind_param("s", $row['contact_no']);
                                     $stmt->execute();

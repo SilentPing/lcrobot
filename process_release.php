@@ -45,9 +45,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         // If no contact info found in reqtracking_tbl and user_id is 0, try to find correct user_id by contact number
         if ((empty($contact_no) || empty($email)) && $user_id == 0) {
-            // First try to find user by contact number (more reliable than name matching)
+            // First try to find user by contact number (prioritize regular users over admins)
             if (!empty($contact_no)) {
-                $userQuery = "SELECT id_user, email FROM users WHERE contact_no = ? LIMIT 1";
+                $userQuery = "SELECT id_user, email, usertype FROM users WHERE contact_no = ? ORDER BY CASE WHEN usertype = 'user' THEN 1 ELSE 2 END, id_user ASC";
                 $stmt = $conn->prepare($userQuery);
                 $stmt->bind_param("s", $contact_no);
                 $stmt->execute();
@@ -219,7 +219,7 @@ function sendSMSWithPDFReceipt($phone_number, $message, $qr_reference) {
         $sender_name = 'MCROBOTOLAN';
         
         // Create public URL for PDF (you can modify this to your actual domain)
-        $base_url = 'http://localhost/civreg/';
+        $base_url = 'https://lcrobot.pcbics.net/';
         $pdf_url = $base_url . 'download_receipt.php?ref=' . urlencode($qr_reference);
         
         // Enhanced message with PDF link
