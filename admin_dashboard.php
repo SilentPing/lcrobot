@@ -22,6 +22,58 @@ include('includes/header.php');
 include('includes/navbar.php'); 
 ?>
 
+<style>
+/* Fix Footer Positioning */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.container-fluid {
+  flex: 1;
+  padding-bottom: 2rem;
+}
+
+footer.sticky-footer {
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  margin-top: auto;
+  padding: 1rem 0;
+  background-color: #f8f9fc;
+  border-top: 1px solid #e3e6f0;
+}
+
+footer.sticky-footer .copyright {
+  color: #858796;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Ensure proper spacing */
+#content-wrapper {
+  min-height: calc(100vh - 56px); /* Subtract navbar height */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-bottom: 1rem;
+  }
+  
+  footer.sticky-footer {
+    padding: 0.75rem 0;
+  }
+  
+  footer.sticky-footer .copyright {
+    font-size: 0.8rem;
+  }
+}
+</style>
+
 
 <!-- Begin Page Content -->
 <div class="container-fluid">
