@@ -9,7 +9,15 @@
         </div>
       </footer>
       <!-- End of Footer -->
-    
-</body>
+      <!-- </div> -->
+        <!-- /.container-fluid -->
 
-</html>
+      <!-- </div> -->
+      <!-- End of Main Content -->
+    <!-- </div> -->
+    End of Content Wrapper
+
+    
+<!-- </body>
+
+</html> -->
