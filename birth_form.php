@@ -301,11 +301,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <span>Fill up the Request Form</span>
         </header>
 
-        <form method="POST" action="">
-            <div class="form first">
-                <div class="details personal">
-                    <div class="form-section-title">Personal Information</div>
-                    <div class="fields">
+        <!-- Progress Indicator -->
+        <div class="progress-indicator">
+            <div class="progress-step active" data-step="1">
+                <span class="step-number">1</span>
+                <span class="step-title">Personal Info</span>
+            </div>
+            <div class="progress-step" data-step="2">
+                <span class="step-number">2</span>
+                <span class="step-title">Parents Info</span>
+            </div>
+            <div class="progress-step" data-step="3">
+                <span class="step-number">3</span>
+                <span class="step-title">Request Details</span>
+            </div>
+        </div>
+
+        <form method="POST" action="" id="multiStepForm">
+            <!-- Step 1: Personal Information -->
+            <div class="form-step active" data-step="1">
+                <div class="form-section-title">Step 1: Personal Information</div>
+                <div class="fields">
                         <div class="input-field">
                             <label>Last Name</label>
                             <input type="text" name="lastname" class="form-control" value="<?php echo $u_ln; ?>" required  data-toggle="popover" data-trigger="focus" data-placement="top" title="Instructions">
@@ -363,8 +379,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
 
 
-                        <div class="form-section-title" style="width: 100%; margin: 30px 0 20px 0;">Parents Information</div>
-                        
+                </div>
+                
+                <!-- Step Navigation for Step 1 -->
+                <div class="step-navigation">
+                    <button type="button" class="btn-next" onclick="nextStep(2)">Next Step <i class="uil uil-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Step 2: Parents Information -->
+            <div class="form-step" data-step="2">
+                <div class="form-section-title">Step 2: Parents Information</div>
+                <div class="fields">
                         <div class="input-field">
                             <label>Father's Last Name</label>
                             <input type="text" name="fath_ln" class="form-control" required data-toggle="popover" data-trigger="focus" data-placement="top" title="Instructions">
@@ -397,6 +423,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                               <input type="text" name="moth_maiden_mn" class="form-control" required>
                         </div>  
 
+                </div>
+                
+                <!-- Step Navigation for Step 2 -->
+                <div class="step-navigation">
+                    <button type="button" class="btn-prev" onclick="prevStep(1)"><i class="uil uil-arrow-left"></i> Previous</button>
+                    <button type="button" class="btn-next" onclick="nextStep(3)">Next Step <i class="uil uil-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Step 3: Request Details -->
+            <div class="form-step" data-step="3">
+                <div class="form-section-title">Step 3: Request Details</div>
+                <div class="fields">
                         <div class="input-field">
                             <label>Sex</label>
                             <select name="sex" class="form-control" required>
@@ -421,9 +460,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </select>
                         </div> 
 
-
-                        <div class="form-section-title" style="width: 100%; margin: 30px 0 20px 0;">Request Details</div>
-                        
                          <div class="input-field">
                                 <label for="purpose_of_request">Purpose of Request</label>
                                 <select name="purpose_of_request" id="purpose_of_request" class="form-control" required>
@@ -438,26 +474,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div class="input-field second-dob exclude-popover">
                             <label>Type of Request</label>
                             <input type="text" id="type_request" name="type_request" value="<?php echo $typeRequest; ?>" required readonly>
-                        </div> 
+                        </div>
 
-                    </div>
                 </div>
-
-                <input type="hidden" name="id_user" value="<?php echo $_SESSION['id_user']; ?>">
-
-                        <div class="buttons">
-                            <button class="submitBtn">
-                                <span class="btnText">Submit</span>
-                            <i class="uil uil-navigator"></i>
-                            </button>
-
-                        <button class="backBtn" style="background-color: #1164f2"  id="backButton">
-                            <span class="btnText">Back</span>
-                         <i class="uil-arrow-right"></i>
-                        </button>
-                    </div>
-                </div> 
+                
+                <!-- Step Navigation for Step 3 -->
+                <div class="step-navigation">
+                    <button type="button" class="btn-prev" onclick="prevStep(2)"><i class="uil uil-arrow-left"></i> Previous</button>
+                    <button type="button" class="btn-submit" onclick="showConfirmationModal()">
+                        <span class="btnText">Submit Request</span>
+                        <i class="uil uil-check"></i>
+                    </button>
+                </div>
             </div>
+
+            <input type="hidden" name="id_user" value="<?php echo $_SESSION['id_user']; ?>">
         </form>
     </div>
 
@@ -466,55 +497,106 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Step-by-Step Form Functionality
+    let currentStep = 1;
+    const totalSteps = 3;
+
+    function nextStep(stepNumber) {
+        // Validate current step before proceeding
+        if (validateCurrentStep(currentStep)) {
+            // Mark current step as completed
+            document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
+            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('completed');
+            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
+            
+            // Show next step
+            currentStep = stepNumber;
+            document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
+            
+            // Scroll to top of form
+            document.querySelector('.container form').scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    function prevStep(stepNumber) {
+        // Mark current step as not completed
+        document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
+        
+        // Show previous step
+        currentStep = stepNumber;
+        document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('completed');
+        
+        // Scroll to top of form
+        document.querySelector('.container form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function validateCurrentStep(step) {
+        const currentStepElement = document.querySelector(`[data-step="${step}"]`);
+        const requiredFields = currentStepElement.querySelectorAll('input[required], select[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(function(field) {
+            if (field.value.trim() === '') {
+                field.style.borderColor = '#e74c3c';
+                isValid = false;
+            } else {
+                field.style.borderColor = '#e1e8ed';
+            }
+        });
+        
+        if (!isValid) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Incomplete Information',
+                text: 'Please fill in all required fields before proceeding to the next step.',
+                confirmButtonText: 'OK'
+            });
+        }
+        
+        return isValid;
+    }
+
     // Function to show SweetAlert confirmation modal
     function showConfirmationModal() {
-        Swal.fire({
-            title: "Are you sure You want to submit it?",
-            text: "Please review your information before submitting.",
-            icon: "question",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, submit!"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Check if the form is empty before submitting
-                var formIsValid = validateForm();
-                if (formIsValid) {
-                    // If the form is valid, submit it
-                    document.querySelector("form").submit();
-                } else {
-                    // If the form is not valid, show an error message
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Please fill in all the required fields before submitting.',
-                    });
+        // Validate all steps before final submission
+        let allStepsValid = true;
+        for (let i = 1; i <= totalSteps; i++) {
+            if (!validateCurrentStep(i)) {
+                allStepsValid = false;
+                // Go to the first invalid step
+                nextStep(i);
+                break;
+            }
+        }
+        
+        if (allStepsValid) {
+            Swal.fire({
+                title: "Ready to Submit?",
+                text: "Please review your information before submitting your request.",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#27ae60",
+                cancelButtonColor: "#95a5a6",
+                confirmButtonText: "Yes, Submit Request!",
+                cancelButtonText: "Review Again"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Submit the form
+                    document.getElementById("multiStepForm").submit();
                 }
-            }
-        });
+            });
+        }
     }
 
-    // Function to validate the form
-    function validateForm() {
-        // You can customize this function based on your form structure
-        var requiredFields = document.querySelectorAll('input[required], select[required]');
-        var formIsValid = true;
-
-        requiredFields.forEach(function (field) {
-            if (field.value.trim() === '') {
-                formIsValid = false;
-                return;
-            }
-        });
-
-        return formIsValid;
-    }
-
-    // Attach an event listener to the Submit button
-    document.querySelector('.submitBtn').addEventListener('click', function(event) {
-        event.preventDefault(); // Prevent default form submission
-        showConfirmationModal(); // Show SweetAlert confirmation modal
+    // Initialize form on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set initial step as active
+        document.querySelector('[data-step="1"]').classList.add('active');
+        document.querySelector('.progress-step[data-step="1"]').classList.add('active');
     });
 </script>
 
