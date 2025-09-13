@@ -200,15 +200,15 @@ include('includes/navbar.php');
 
 
   <!-- Footer -->
-  <footer class="sticky-footer bg-white">
+  <!-- <footer class="sticky-footer bg-white">
     <div class="container my-auto">
       <div class="copyright text-center my-auto">
         <span>Copyright &copy; MCRO 2025</span>
       </div>
     </div>
-  </footer>
+  </footer> -->
 
-  <?php
+<?php
 include('includes/script.php');
 include('includes/footer.php');
 ?>
