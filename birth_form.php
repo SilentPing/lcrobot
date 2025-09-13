@@ -297,37 +297,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
    <div class="container">
         <header>
-            <img src="images/civ.png" alt="MCRO Logo" class="mcro-logo">
-            <span>Fill up the Request Form</span>
-        </header>
+            <img src="images/civ.png" alt="" class="mcro-logo">
+        Fill up the Request Form
+    </header>
 
-        <form method="POST" action="" class="form-wizard" id="multiStepForm">
-            <!-- Success State -->
-            <div class="completed" hidden>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-                <h3>Request Submitted Successfully!</h3>
-                <p>Your birth certificate request has been submitted and is being processed.</p>
-            </div>
+        <form method="POST" action="">
+            <div class="form first">
+                <div class="details personal">
 
-            <h1>Birth Certificate Request</h1>
-
-            <!-- Progress Container -->
-            <div class="progress-container">
-                <div class="progress"></div>
-                <ol>
-                    <li class="current">Personal</li>
-                    <li>Parents</li>
-                    <li>Details</li>
-                </ol>
-            </div>
-
-            <!-- Steps Container -->
-            <div class="steps-container">
-                <!-- Step 1: Personal Information -->
-                <div class="step">
-                    <h3>Personal Information</h3>
                     <div class="fields">
                         <div class="input-field">
                             <label>Last Name</label>
@@ -357,25 +334,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <option value="">Select Province</option>
                                     <!-- Options will be dynamically populated using JavaScript -->
                                     <?php 
-                                        // Establish a database connection (replace these values with your database credentials)
+                                      // Use the global connection from db.php
                                       require_once __DIR__ . '/db.php';
-
-                                        // Check the connection
-                                        if ($conn->connect_error) {
-                                            die("Connection failed: " . $conn->connect_error);
-                                        }
-
-                                        // Fetch data from the 'refprovince' table and populate the dropdown
-                                        $sql = "SELECT provDesc, provCode FROM refprovince ORDER BY provDesc";
-                                        $result = $conn->query($sql);
-
-                                        if ($result->num_rows > 0) {
-                                            while ($row = $result->fetch_assoc()) {
-                                                echo "<option value='" . $row['provCode'] . "'>" . $row['provDesc'] . "</option>";
-                                            }
-                                        }
-
-                                        // Database connection will be closed automatically
+                            
+                                      // Fetch data from the 'refprovince' table and populate the dropdown
+                                      $sql = "SELECT provDesc, provCode FROM refprovince ORDER BY provDesc";
+                                      $result = $conn->query($sql);
+                            
+                                      if ($result && $result->num_rows > 0) {
+                                          while ($row = $result->fetch_assoc()) {
+                                              echo "<option value='" . htmlspecialchars($row['provCode'], ENT_QUOTES) . "'>" 
+                                                  . htmlspecialchars($row['provDesc'], ENT_QUOTES) . "</option>";
+                                          }
+                                      }
+                            
+                                      // No need to close connection here, db.php manages it
                                     ?>
                                 </select> 
                             </div>
@@ -386,13 +359,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
 
 
-                    </div>
-                </div>
-
-                <!-- Step 2: Parents Information -->
-                <div class="step">
-                    <h3>Parents Information</h3>
-                    <div class="fields">
                         <div class="input-field">
                             <label>Father's Last Name</label>
                             <input type="text" name="fath_ln" class="form-control" required data-toggle="popover" data-trigger="focus" data-placement="top" title="Instructions">
@@ -425,13 +391,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                               <input type="text" name="moth_maiden_mn" class="form-control" required>
                         </div>  
 
-                    </div>
-                </div>
-
-                <!-- Step 3: Request Details -->
-                <div class="step">
-                    <h3>Request Details</h3>
-                    <div class="fields">
                         <div class="input-field">
                             <label>Sex</label>
                             <select name="sex" class="form-control" required>
@@ -456,6 +415,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </select>
                         </div> 
 
+
                          <div class="input-field">
                                 <label for="purpose_of_request">Purpose of Request</label>
                                 <select name="purpose_of_request" id="purpose_of_request" class="form-control" required>
@@ -470,20 +430,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div class="input-field second-dob exclude-popover">
                             <label>Type of Request</label>
                             <input type="text" id="type_request" name="type_request" value="<?php echo $typeRequest; ?>" required readonly>
-                        </div>
+                        </div> 
 
                     </div>
                 </div>
-            </div>
 
-            <!-- Controls -->
-            <div class="controls">
-                <button type="button" class="prev-btn">Previous</button>
-                <button type="button" class="next-btn">Next</button>
-                <button type="submit" class="submit-btn">Submit Request</button>
-            </div>
+                <input type="hidden" name="id_user" value="<?php echo $_SESSION['id_user']; ?>">
 
-            <input type="hidden" name="id_user" value="<?php echo $_SESSION['id_user']; ?>">
+                        <div class="buttons">
+                            <button class="submitBtn">
+                                <span class="btnText">Submit</span>
+                            <i class="uil uil-navigator"></i>
+                            </button>
+
+                        <button class="backBtn" style="background-color: #1164f2"  id="backButton">
+                            <span class="btnText">Back</span>
+                         <i class="uil-arrow-right"></i>
+                        </button>
+                    </div>
+                </div> 
+            </div>
         </form>
     </div>
 
@@ -492,133 +458,56 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Multi-Step Form Functionality
-    const form = document.querySelector(".form-wizard");
-    const progress = form.querySelector(".progress");
-    const stepsContainer = form.querySelector(".steps-container");
-    const steps = form.querySelectorAll(".step");
-    const stepIndicators = form.querySelectorAll(".progress-container li");
-    const prevButton = form.querySelector(".prev-btn");
-    const nextButton = form.querySelector(".next-btn");
-    const submitButton = form.querySelector(".submit-btn");
-
-    // Set CSS variable for number of steps
-    document.documentElement.style.setProperty("--steps", stepIndicators.length);
-
-    let currentStep = 0;
-
-    const updateProgress = () => {
-        let width = currentStep / (steps.length - 1);
-        progress.style.transform = `scaleX(${width})`;
-
-        // Update container height
-        stepsContainer.style.height = steps[currentStep].offsetHeight + "px";
-
-        // Update step indicators
-        stepIndicators.forEach((indicator, index) => {
-            indicator.classList.toggle("current", currentStep === index);
-            indicator.classList.toggle("done", currentStep > index);
-        });
-
-        // Update steps
-        steps.forEach((step, index) => {
-            const percentage = document.documentElement.dir === "rtl" ? 100 : -100;
-            step.style.transform = `translateX(${currentStep * percentage}%)`;
-            step.classList.toggle("current", currentStep === index);
-        });
-
-        updateButtons();
-    };
-
-    const updateButtons = () => {
-        prevButton.hidden = currentStep === 0;
-        nextButton.hidden = currentStep >= steps.length - 1;
-        submitButton.hidden = !nextButton.hidden;
-    };
-
-    const isValidStep = () => {
-        const fields = steps[currentStep].querySelectorAll("input, select, textarea");
-        return [...fields].every((field) => field.reportValidity());
-    };
-
-    // Event listeners
-    const inputs = form.querySelectorAll("input, select, textarea");
-    inputs.forEach((input) =>
-        input.addEventListener("focus", (e) => {
-            const focusedElement = e.target;
-
-            // Get the step where the focused element belongs
-            const focusedStep = [...steps].findIndex((step) =>
-                step.contains(focusedElement)
-            );
-
-            if (focusedStep !== -1 && focusedStep !== currentStep) {
-                if (!isValidStep()) return;
-
-                currentStep = focusedStep;
-                updateProgress();
+    // Function to show SweetAlert confirmation modal
+    function showConfirmationModal() {
+        Swal.fire({
+            title: "Are you sure You want to submit it?",
+            text: "Please review your information before submitting.",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, submit!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Check if the form is empty before submitting
+                var formIsValid = validateForm();
+                if (formIsValid) {
+                    // If the form is valid, submit it
+                    document.querySelector("form").submit();
+                } else {
+                    // If the form is not valid, show an error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Please fill in all the required fields before submitting.',
+                    });
+                }
             }
+        });
+    }
 
-            stepsContainer.scrollTop = 0;
-            stepsContainer.scrollLeft = 0;
-        })
-    );
+    // Function to validate the form
+    function validateForm() {
+        // You can customize this function based on your form structure
+        var requiredFields = document.querySelectorAll('input[required], select[required]');
+        var formIsValid = true;
 
-    // Form submission
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
+        requiredFields.forEach(function (field) {
+            if (field.value.trim() === '') {
+                formIsValid = false;
+                return;
+            }
+        });
 
-        if (!form.checkValidity()) return;
+        return formIsValid;
+    }
 
-        // Show loading state
-        submitButton.disabled = true;
-        submitButton.textContent = "Submitting...";
-
-        // Simulate form submission
-        setTimeout(() => {
-            // Show success state
-            form.querySelector(".completed").hidden = false;
-            
-            // Actually submit the form after showing success
-            setTimeout(() => {
-                form.submit();
-            }, 2000);
-        }, 1500);
+    // Attach an event listener to the Submit button
+    document.querySelector('.submitBtn').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent default form submission
+        showConfirmationModal(); // Show SweetAlert confirmation modal
     });
-
-    // Previous button
-    prevButton.addEventListener("click", (e) => {
-        e.preventDefault();
-
-        if (currentStep > 0) {
-            currentStep--;
-            updateProgress();
-        }
-    });
-
-    // Next button
-    nextButton.addEventListener("click", (e) => {
-        e.preventDefault();
-
-        if (!isValidStep()) {
-            // Show validation error
-            Swal.fire({
-                icon: 'warning',
-                title: 'Incomplete Information',
-                text: 'Please fill in all required fields before proceeding to the next step.',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        if (currentStep < steps.length - 1) {
-            currentStep++;
-            updateProgress();
-        }
-    });
-
-    // Initialize form
-    updateProgress();
 </script>
 
 <script src="birthform.js"></script>
