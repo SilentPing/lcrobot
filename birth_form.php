@@ -297,14 +297,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
    <div class="container">
         <header>
-            <img src="images/civ.png" alt="" class="mcro-logo">
-        Fill up the Request Form
-    </header>
+            <img src="images/civ.png" alt="MCRO Logo" class="mcro-logo">
+            <span>Fill up the Request Form</span>
+        </header>
 
         <form method="POST" action="">
             <div class="form first">
                 <div class="details personal">
-
+                    <div class="form-section-title">Personal Information</div>
                     <div class="fields">
                         <div class="input-field">
                             <label>Last Name</label>
@@ -363,6 +363,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
 
 
+                        <div class="form-section-title" style="width: 100%; margin: 30px 0 20px 0;">Parents Information</div>
+                        
                         <div class="input-field">
                             <label>Father's Last Name</label>
                             <input type="text" name="fath_ln" class="form-control" required data-toggle="popover" data-trigger="focus" data-placement="top" title="Instructions">
@@ -420,6 +422,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div> 
 
 
+                        <div class="form-section-title" style="width: 100%; margin: 30px 0 20px 0;">Request Details</div>
+                        
                          <div class="input-field">
                                 <label for="purpose_of_request">Purpose of Request</label>
                                 <select name="purpose_of_request" id="purpose_of_request" class="form-control" required>
