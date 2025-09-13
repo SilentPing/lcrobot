@@ -1,32 +1,114 @@
-/* ===== Google Font Import - Poppins ===== */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
-
-/* ===== Multi-Step Form Variables ===== */
-:root {
-  --main-color: #667eea;
-  --dark-color: #5a6fd8;
-  --step-color: #ced7e0;
-  --step-size: 32px;
-  --steps: 3;
-  --progress-width: calc((var(--steps) - 1) / var(--steps) * 100%);
-}
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap");
 
 * {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Outfit", sans-serif;
   padding: 0;
   margin: 0;
   box-sizing: border-box;
 }
 
+:root {
+  --main-color: #c41e67;
+  --dark-color: #a71555;
+  --step-color: #ced7e0;
+  --step-size: 32px;
+  --steps: 4;
+  --progress-width: calc((var(--steps) - 1) / var(--steps) * 100%);
+}
+
 body {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px 0;
-  color: #333;
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: lavender;
+  color: #333;
 }
+
+h1 {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+h3 {
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  font-size: clamp(1rem, 2vw + 1rem, 1.25rem);
+}
+
+label {
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+input,
+select,
+textarea {
+  outline-color: var(--main-color);
+  border: 2px solid #e1e8ed;
+  padding: 12px 15px;
+  border-radius: 8px;
+  width: 100%;
+  font-size: 14px;
+  text-align: start;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--main-color);
+  box-shadow: 0 0 0 3px rgba(196, 30, 103, 0.1);
+  transform: translateY(-1px);
+}
+
+input[type="tel"] {
+  direction: inherit;
+}
+
+textarea {
+  resize: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 16px;
+  padding: 8px 16px;
+  background-color: var(--main-color);
+  color: #fff;
+  font-size: 0.875rem;
+  transition: 0.3s;
+}
+
+button:active,
+button:hover {
+  background-color: var(--dark-color);
+}
+
+button:disabled {
+  opacity: 0.8;
+}
+
+button:focus {
+  outline-color: #333;
+}
+
+button[type="submit"] {
+  background-color: #333;
+}
+
+button[type="submit"]:hover,
+button[type="submit"]:active {
+  background-color: #444;
+}
+
+form {
+  margin-block: auto;
+}
+
+/* form styles */
 
 .container {
   position: relative;
@@ -61,7 +143,7 @@ body {
   height: 4px;
   width: 60px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #c41e67 0%, #a71555 100%);
   transform: translateX(-50%);
 }
 
@@ -71,102 +153,17 @@ body {
   margin-right: 10px;
 }
 
-/* ===== Multi-Step Form Styles ===== */
 .form-wizard {
   background-color: #fff;
-  padding: 1.5rem;
-  border-radius: 8px;
+  padding: 2rem;
+  border-radius: 15px;
   width: 100%;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 4px 20px rgba(167, 21, 84, 0.1);
+  border: 1px solid rgba(167, 21, 84, 0.1);
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 16px;
-  color: #2c3e50;
-  font-size: 24px;
-  font-weight: 700;
-}
-
-h3 {
-  margin-bottom: 16px;
-  text-transform: uppercase;
-  font-size: clamp(1rem, 2vw + 1rem, 1.25rem);
-  color: #2c3e50;
-  font-weight: 600;
-}
-
-label {
-  display: inline-block;
-  margin-bottom: 4px;
-  font-weight: 500;
-  color: #2c3e50;
-}
-
-input, select, textarea {
-  outline-color: var(--main-color);
-  border: 2px solid #e1e8ed;
-  padding: 12px 15px;
-  border-radius: 8px;
-  width: 100%;
-  font-size: 14px;
-  text-align: start;
-  transition: all 0.3s ease;
-  background-color: #fff;
-}
-
-input:focus, select:focus, textarea:focus {
-  border-color: var(--main-color);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  transform: translateY(-1px);
-}
-
-input[type="tel"] {
-  direction: inherit;
-}
-
-textarea {
-  resize: none;
-}
-
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 20px;
-  background-color: var(--main-color);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-button:active, button:hover {
-  background-color: var(--dark-color);
-  transform: translateY(-2px);
-}
-
-button:disabled {
-  opacity: 0.8;
-}
-
-button:focus {
-  outline-color: #333;
-}
-
-button[type="submit"] {
-  background-color: #27ae60;
-}
-
-button[type="submit"]:hover,
-button[type="submit"]:active {
-  background-color: #2ecc71;
-}
-
-/* ===== Progress Container ===== */
 .progress-container {
   position: relative;
-  margin: 30px 0;
 }
 
 .progress-container::before {
@@ -192,6 +189,11 @@ button[type="submit"]:active {
   transform: scaleX(0);
   transform-origin: left;
   transition: 0.3s;
+}
+
+/* if page is rtl adjust the transform origin */
+html[dir="rtl"] .progress-container .progress {
+  transform-origin: right;
 }
 
 .progress-container ol {
@@ -228,7 +230,6 @@ button[type="submit"]:active {
   color: #fff;
   transition: 0.3s linear 0.3s;
   font-size: 1rem;
-  font-weight: 700;
 }
 
 @media (min-width: 480px) {
@@ -239,7 +240,7 @@ button[type="submit"]:active {
 }
 
 .progress-container li:where(.done, .current) {
-  color: #2c3e50;
+  color: #333;
   font-weight: 500;
 }
 
@@ -249,14 +250,12 @@ button[type="submit"]:active {
 
 .progress-container li.current::before {
   background-color: var(--main-color);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+  box-shadow: 0 0 0 3px rgba(167, 21, 84, 0.25);
 }
 
-/* ===== Steps Container ===== */
 .steps-container {
   display: flex;
   overflow: hidden;
-  min-height: 400px;
 }
 
 .step {
@@ -269,11 +268,7 @@ button[type="submit"]:active {
   gap: 16px;
 }
 
-.step.current {
-  opacity: 1;
-}
-
-/* ===== Form Fields ===== */
+/* Form Fields Styling */
 .fields {
   display: flex;
   align-items: center;
@@ -292,14 +287,28 @@ button[type="submit"]:active {
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   transition: all 0.3s ease;
+  border: 1px solid rgba(196, 30, 103, 0.1);
 }
 
 .input-field:hover {
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   transform: translateY(-2px);
+  border-color: rgba(196, 30, 103, 0.2);
 }
 
-/* ===== Controls ===== */
+.input-field label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+}
+
+.step.current {
+  opacity: 1;
+}
+
 .controls {
   display: flex;
   align-items: center;
@@ -311,25 +320,20 @@ button[type="submit"]:active {
 
 .controls button {
   flex: 1;
-  min-height: 48px;
 }
 
-/* ===== Completed State ===== */
 .completed {
   text-align: center;
-  padding: 40px 20px;
 }
 
 .completed h3 {
   margin-bottom: 8px;
-  color: #27ae60;
 }
 
 .completed svg {
   width: 100px;
   height: 100px;
-  stroke: #27ae60;
-  margin-bottom: 20px;
+  stroke: yellowgreen;
 }
 
 .completed:not([hidden]) ~ * {
@@ -341,19 +345,23 @@ button[type="submit"]:active {
   .container {
     padding: 20px;
     margin: 10px;
+    border-radius: 15px;
   }
   
   .form-wizard {
-    padding: 1rem;
+    padding: 1.5rem;
+    border-radius: 12px;
   }
   
   .fields {
     flex-direction: column;
+    gap: 12px;
   }
   
   .input-field {
     width: 100%;
     margin: 8px 0;
+    padding: 12px;
   }
   
   .controls {
@@ -363,23 +371,15 @@ button[type="submit"]:active {
   
   .controls button {
     width: 100%;
+    min-height: 48px;
   }
   
   .progress-container li {
     font-size: 0.875rem;
   }
   
-  .step-number {
-    width: 28px;
-    height: 28px;
-    font-size: 0.875rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 15px;
-    margin: 5px;
+  .step {
+    padding: 16px 4px;
   }
   
   h1 {
@@ -389,8 +389,110 @@ button[type="submit"]:active {
   h3 {
     font-size: 16px;
   }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
+    margin: 5px;
+    border-radius: 12px;
+  }
+  
+  .form-wizard {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+  
+  .input-field {
+    padding: 10px;
+  }
   
   .progress-container li {
     font-size: 0.75rem;
   }
+  
+  .progress-container li::before {
+    width: 28px;
+    height: 28px;
+    font-size: 0.875rem;
+  }
+  
+  h1 {
+    font-size: 18px;
+  }
+  
+  h3 {
+    font-size: 14px;
+  }
+}
+
+/* ===== Form Control Styling ===== */
+.form-control {
+  margin-bottom: 16px;
+}
+
+.form-control label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+/* ===== Button Enhancements ===== */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  background-color: var(--main-color);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+button:hover::before {
+  left: 100%;
+}
+
+button:active,
+button:hover {
+  background-color: var(--dark-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(196, 30, 103, 0.4);
+}
+
+button:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+  transform: none;
+}
+
+button:focus {
+  outline: 2px solid var(--main-color);
+  outline-offset: 2px;
+}
+
+button[type="submit"] {
+  background-color: #27ae60;
+}
+
+button[type="submit"]:hover,
+button[type="submit"]:active {
+  background-color: #2ecc71;
+  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
 }
