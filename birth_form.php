@@ -301,27 +301,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <span>Fill up the Request Form</span>
         </header>
 
-        <!-- Progress Indicator -->
-        <div class="progress-indicator">
-            <div class="progress-step active" data-step="1">
-                <span class="step-number">1</span>
-                <span class="step-title">Personal Info</span>
+        <form method="POST" action="" class="form-wizard" id="multiStepForm">
+            <!-- Success State -->
+            <div class="completed" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                <h3>Request Submitted Successfully!</h3>
+                <p>Your birth certificate request has been submitted and is being processed.</p>
             </div>
-            <div class="progress-step" data-step="2">
-                <span class="step-number">2</span>
-                <span class="step-title">Parents Info</span>
-            </div>
-            <div class="progress-step" data-step="3">
-                <span class="step-number">3</span>
-                <span class="step-title">Request Details</span>
-            </div>
-        </div>
 
-        <form method="POST" action="" id="multiStepForm">
-            <!-- Step 1: Personal Information -->
-            <div class="form-step active" data-step="1">
-                <div class="form-section-title">Step 1: Personal Information</div>
-                <div class="fields">
+            <h1>Birth Certificate Request</h1>
+
+            <!-- Progress Container -->
+            <div class="progress-container">
+                <div class="progress"></div>
+                <ol>
+                    <li class="current">Personal</li>
+                    <li>Parents</li>
+                    <li>Details</li>
+                </ol>
+            </div>
+
+            <!-- Steps Container -->
+            <div class="steps-container">
+                <!-- Step 1: Personal Information -->
+                <div class="step">
+                    <h3>Personal Information</h3>
+                    <div class="fields">
                         <div class="input-field">
                             <label>Last Name</label>
                             <input type="text" name="lastname" class="form-control" value="<?php echo $u_ln; ?>" required  data-toggle="popover" data-trigger="focus" data-placement="top" title="Instructions">
@@ -379,18 +386,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
 
 
+                    </div>
                 </div>
-                
-                <!-- Step Navigation for Step 1 -->
-                <div class="step-navigation">
-                    <button type="button" class="btn-next" onclick="nextStep(2)">Next Step <i class="uil uil-arrow-right"></i></button>
-                </div>
-            </div>
 
-            <!-- Step 2: Parents Information -->
-            <div class="form-step" data-step="2">
-                <div class="form-section-title">Step 2: Parents Information</div>
-                <div class="fields">
+                <!-- Step 2: Parents Information -->
+                <div class="step">
+                    <h3>Parents Information</h3>
+                    <div class="fields">
                         <div class="input-field">
                             <label>Father's Last Name</label>
                             <input type="text" name="fath_ln" class="form-control" required data-toggle="popover" data-trigger="focus" data-placement="top" title="Instructions">
@@ -423,19 +425,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                               <input type="text" name="moth_maiden_mn" class="form-control" required>
                         </div>  
 
+                    </div>
                 </div>
-                
-                <!-- Step Navigation for Step 2 -->
-                <div class="step-navigation">
-                    <button type="button" class="btn-prev" onclick="prevStep(1)"><i class="uil uil-arrow-left"></i> Previous</button>
-                    <button type="button" class="btn-next" onclick="nextStep(3)">Next Step <i class="uil uil-arrow-right"></i></button>
-                </div>
-            </div>
 
-            <!-- Step 3: Request Details -->
-            <div class="form-step" data-step="3">
-                <div class="form-section-title">Step 3: Request Details</div>
-                <div class="fields">
+                <!-- Step 3: Request Details -->
+                <div class="step">
+                    <h3>Request Details</h3>
+                    <div class="fields">
                         <div class="input-field">
                             <label>Sex</label>
                             <select name="sex" class="form-control" required>
@@ -476,16 +472,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <input type="text" id="type_request" name="type_request" value="<?php echo $typeRequest; ?>" required readonly>
                         </div>
 
+                    </div>
                 </div>
-                
-                <!-- Step Navigation for Step 3 -->
-                <div class="step-navigation">
-                    <button type="button" class="btn-prev" onclick="prevStep(2)"><i class="uil uil-arrow-left"></i> Previous</button>
-                    <button type="button" class="btn-submit" onclick="showConfirmationModal()">
-                        <span class="btnText">Submit Request</span>
-                        <i class="uil uil-check"></i>
-                    </button>
-                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button type="button" class="prev-btn">Previous</button>
+                <button type="button" class="next-btn">Next</button>
+                <button type="submit" class="submit-btn">Submit Request</button>
             </div>
 
             <input type="hidden" name="id_user" value="<?php echo $_SESSION['id_user']; ?>">
@@ -497,107 +492,133 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Step-by-Step Form Functionality
-    let currentStep = 1;
-    const totalSteps = 3;
+    // Multi-Step Form Functionality
+    const form = document.querySelector(".form-wizard");
+    const progress = form.querySelector(".progress");
+    const stepsContainer = form.querySelector(".steps-container");
+    const steps = form.querySelectorAll(".step");
+    const stepIndicators = form.querySelectorAll(".progress-container li");
+    const prevButton = form.querySelector(".prev-btn");
+    const nextButton = form.querySelector(".next-btn");
+    const submitButton = form.querySelector(".submit-btn");
 
-    function nextStep(stepNumber) {
-        // Validate current step before proceeding
-        if (validateCurrentStep(currentStep)) {
-            // Mark current step as completed
-            document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
-            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('completed');
-            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
-            
-            // Show next step
-            currentStep = stepNumber;
-            document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
-            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
-            
-            // Scroll to top of form
-            document.querySelector('.container form').scrollIntoView({ behavior: 'smooth' });
-        }
-    }
+    // Set CSS variable for number of steps
+    document.documentElement.style.setProperty("--steps", stepIndicators.length);
 
-    function prevStep(stepNumber) {
-        // Mark current step as not completed
-        document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
-        
-        // Show previous step
-        currentStep = stepNumber;
-        document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('completed');
-        
-        // Scroll to top of form
-        document.querySelector('.container form').scrollIntoView({ behavior: 'smooth' });
-    }
+    let currentStep = 0;
 
-    function validateCurrentStep(step) {
-        const currentStepElement = document.querySelector(`[data-step="${step}"]`);
-        const requiredFields = currentStepElement.querySelectorAll('input[required], select[required]');
-        let isValid = true;
-        
-        requiredFields.forEach(function(field) {
-            if (field.value.trim() === '') {
-                field.style.borderColor = '#e74c3c';
-                isValid = false;
-            } else {
-                field.style.borderColor = '#e1e8ed';
-            }
+    const updateProgress = () => {
+        let width = currentStep / (steps.length - 1);
+        progress.style.transform = `scaleX(${width})`;
+
+        // Update container height
+        stepsContainer.style.height = steps[currentStep].offsetHeight + "px";
+
+        // Update step indicators
+        stepIndicators.forEach((indicator, index) => {
+            indicator.classList.toggle("current", currentStep === index);
+            indicator.classList.toggle("done", currentStep > index);
         });
-        
-        if (!isValid) {
+
+        // Update steps
+        steps.forEach((step, index) => {
+            const percentage = document.documentElement.dir === "rtl" ? 100 : -100;
+            step.style.transform = `translateX(${currentStep * percentage}%)`;
+            step.classList.toggle("current", currentStep === index);
+        });
+
+        updateButtons();
+    };
+
+    const updateButtons = () => {
+        prevButton.hidden = currentStep === 0;
+        nextButton.hidden = currentStep >= steps.length - 1;
+        submitButton.hidden = !nextButton.hidden;
+    };
+
+    const isValidStep = () => {
+        const fields = steps[currentStep].querySelectorAll("input, select, textarea");
+        return [...fields].every((field) => field.reportValidity());
+    };
+
+    // Event listeners
+    const inputs = form.querySelectorAll("input, select, textarea");
+    inputs.forEach((input) =>
+        input.addEventListener("focus", (e) => {
+            const focusedElement = e.target;
+
+            // Get the step where the focused element belongs
+            const focusedStep = [...steps].findIndex((step) =>
+                step.contains(focusedElement)
+            );
+
+            if (focusedStep !== -1 && focusedStep !== currentStep) {
+                if (!isValidStep()) return;
+
+                currentStep = focusedStep;
+                updateProgress();
+            }
+
+            stepsContainer.scrollTop = 0;
+            stepsContainer.scrollLeft = 0;
+        })
+    );
+
+    // Form submission
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        if (!form.checkValidity()) return;
+
+        // Show loading state
+        submitButton.disabled = true;
+        submitButton.textContent = "Submitting...";
+
+        // Simulate form submission
+        setTimeout(() => {
+            // Show success state
+            form.querySelector(".completed").hidden = false;
+            
+            // Actually submit the form after showing success
+            setTimeout(() => {
+                form.submit();
+            }, 2000);
+        }, 1500);
+    });
+
+    // Previous button
+    prevButton.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        if (currentStep > 0) {
+            currentStep--;
+            updateProgress();
+        }
+    });
+
+    // Next button
+    nextButton.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        if (!isValidStep()) {
+            // Show validation error
             Swal.fire({
                 icon: 'warning',
                 title: 'Incomplete Information',
                 text: 'Please fill in all required fields before proceeding to the next step.',
                 confirmButtonText: 'OK'
             });
+            return;
         }
-        
-        return isValid;
-    }
 
-    // Function to show SweetAlert confirmation modal
-    function showConfirmationModal() {
-        // Validate all steps before final submission
-        let allStepsValid = true;
-        for (let i = 1; i <= totalSteps; i++) {
-            if (!validateCurrentStep(i)) {
-                allStepsValid = false;
-                // Go to the first invalid step
-                nextStep(i);
-                break;
-            }
+        if (currentStep < steps.length - 1) {
+            currentStep++;
+            updateProgress();
         }
-        
-        if (allStepsValid) {
-            Swal.fire({
-                title: "Ready to Submit?",
-                text: "Please review your information before submitting your request.",
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonColor: "#27ae60",
-                cancelButtonColor: "#95a5a6",
-                confirmButtonText: "Yes, Submit Request!",
-                cancelButtonText: "Review Again"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Submit the form
-                    document.getElementById("multiStepForm").submit();
-                }
-            });
-        }
-    }
-
-    // Initialize form on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        // Set initial step as active
-        document.querySelector('[data-step="1"]').classList.add('active');
-        document.querySelector('.progress-step[data-step="1"]').classList.add('active');
     });
+
+    // Initialize form
+    updateProgress();
 </script>
 
 <script src="birthform.js"></script>
