@@ -114,11 +114,11 @@
 </div>
 
 
-<li class="nav-item">
+<!-- <li class="nav-item">
   <a class="nav-link" href="report.php">
     <i class="bi bi-graph-up-arrow"></i>
     <span>Request Reports</span></a>
-</li>
+</li> -->
 
 <li class="nav-item">
   <a class="nav-link" href="inquiries.php">
