@@ -332,24 +332,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <label>Place of Birth (Province)</label>
                                 <select id="placeOfBirth" name="pob_province" class="form-control" required>
                                     <option value="">Select Province</option>
-                                    <!-- Options will be dynamically populated using JavaScript -->
                                     <?php 
-                                      // Use the global connection from db.php
-                                      require_once __DIR__ . '/db.php';
-                            
-                                      // Fetch data from the 'refprovince' table and populate the dropdown
-                                      $sql = "SELECT provDesc, provCode FROM refprovince ORDER BY provDesc";
-                                      $result = $conn->query($sql);
-                            
-                                      if ($result && $result->num_rows > 0) {
-                                          while ($row = $result->fetch_assoc()) {
-                                              echo "<option value='" . htmlspecialchars($row['provCode'], ENT_QUOTES) . "'>" 
-                                                  . htmlspecialchars($row['provDesc'], ENT_QUOTES) . "</option>";
-                                          }
-                                      }
-                            
-                                      // No need to close connection here, db.php manages it
-                                    ?>
+                                        require_once __DIR__ . '/db.php';
+
+                                        // Check the connection
+                                        if ($conn->connect_error) {
+                                                    die("Connection failed: " . $conn->connect_error);
+                                                }
+
+                                        // Fetch data from the 'refprovince' table and populate the dropdown
+                                        $sql = "SELECT provDesc, provCode FROM refprovince ORDER BY provDesc";
+                                        $result = $conn->query($sql);
+
+                                        if ($result->num_rows > 0) {
+                                            while ($row = $result->fetch_assoc()) {
+                                            echo "<option value='" . $row['provCode'] . "'>" . $row['provDesc'] . "</option>";
+                                            }
+                                        }
+
+                                        // Close the database connection
+                                        $conn->close();
+                                        ?>
                                 </select> 
                             </div>
 
