@@ -1,85 +1,63 @@
 <?php
 session_start();
 
-// Include configuration files
-require_once __DIR__ . '/config/mailgun_config.php';
-require_once __DIR__ . '/config/email_templates.php';
-require_once __DIR__ . '/db.php';
+//Import PHPMailer classes into the global namespace
+//These must be at the top of your script, not inside a function
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
+//Load Composer's autoloader
+require 'phpmailer/vendor/autoload.php';
+
+require_once __DIR__ . '/db.php';
 $msg = "";
-$success = false;
 
 if (isset($_POST['reset'])) {
+
+    // $email = $_SESSION['user_email'];
+
     $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
-    
-    // Validate email format
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $msg = "<div class='alert alert-danger'>Please enter a valid email address.</div>";
-    } else {
-        // Check if user exists
-        $user_query = "SELECT id, username, email FROM users WHERE email = ?";
-        $stmt = mysqli_prepare($conn, $user_query);
-        mysqli_stmt_bind_param($stmt, 's', $email);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        
-        if (mysqli_num_rows($result) > 0) {
-            $user = mysqli_fetch_assoc($result);
-            
-            // Check rate limiting
-            if (!checkResetRateLimit($email)) {
-                $msg = "<div class='alert alert-warning'>Too many reset attempts. Please wait 1 hour before trying again.</div>";
-                logResetAttempt($email, false);
-            } else {
-                // Generate secure reset token
-                $reset_token = generateResetToken();
-                $expires_at = date('Y-m-d H:i:s', time() + RESET_TOKEN_EXPIRY);
-                
-                // Store reset token in database
-                $token_query = "INSERT INTO password_reset_tokens (email, token, expires_at) VALUES (?, ?, ?) 
-                               ON DUPLICATE KEY UPDATE token = VALUES(token), expires_at = VALUES(expires_at), used = 0";
-                $stmt = mysqli_prepare($conn, $token_query);
-                mysqli_stmt_bind_param($stmt, 'sss', $email, $reset_token, $expires_at);
-                
-                if (mysqli_stmt_execute($stmt)) {
-                    // Create reset link
-                    $reset_link = SITE_URL . "/change_pass.php?token=" . $reset_token;
-                    
-                    // Generate email content
-                    $user_name = $user['username'];
-                    $expiry_time = "1 hour";
-                    $html_body = getPasswordResetTemplate($user_name, $reset_link, $expiry_time);
-                    $text_body = getPasswordResetTextTemplate($user_name, $reset_link, $expiry_time);
-                    
-                    // Send email via Mailgun
-                    $email_result = sendMailgunEmail(
-                        $email,
-                        'Password Reset Request - Botolan Civil Registry',
-                        $html_body,
-                        $text_body
-                    );
-                    
-                    if ($email_result['success']) {
-                        $msg = "<div class='alert alert-success'><i class='bi bi-check-circle'></i> Password reset link has been sent to your email address. Please check your inbox and spam folder.</div>";
-                        $success = true;
-                        logResetAttempt($email, true);
-                        logEmailAttempt($email, 'password_reset', true);
-                    } else {
-                        $msg = "<div class='alert alert-danger'><i class='bi bi-exclamation-triangle'></i> Failed to send email. Please try again later or contact support.</div>";
-                        logResetAttempt($email, false);
-                        logEmailAttempt($email, 'password_reset', false, $email_result['error']);
-                    }
-                } else {
-                    $msg = "<div class='alert alert-danger'><i class='bi bi-exclamation-triangle'></i> Database error. Please try again later.</div>";
-                    logResetAttempt($email, false);
-                }
+    $code = mysqli_real_escape_string($conn, md5(rand()));
+
+    if (mysqli_num_rows(mysqli_query($conn, "SELECT * FROM users WHERE email='{$email}'")) > 0) {
+        $query = mysqli_query($conn, "UPDATE users SET code='{$code}' WHERE email='{$email}'");
+
+        if ($query) {        
+            echo "<div style='display: none;'>";
+            //Create an instance; passing `true` enables exceptions
+            $mail = new PHPMailer(true);
+
+            try {
+                //Server settings
+                $mail->SMTPDebug = 2;                      //Enable verbose debug output
+                $mail->isSMTP();                                            //Send using SMTP
+                $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
+                $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+                $mail->Username   = 'nolibaluyot@pcb.edu.ph';                     //SMTP username
+                $mail->Password   = 'qndv iatj pqdl mcqi';                               //SMTP password
+                $mail->SMTPSecure = 'tls';            //Enable implicit TLS encryption
+                $mail->Port       = 587;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+
+                //Recipients
+                $mail->setFrom('baluyotnli@gmail.com');
+                $mail->addAddress($email); // Use the captured email address
+
+                //Content
+                $mail->isHTML(true);                                  //Set email format to HTML
+                $mail->Subject = 'Civil Registrar Portal';
+                $mail->Body    = 'Here is the reset link <b><a href="localhost/civreg/change_pass.php?reset='.$code.'">localhost/civreg/change_pass.php?reset='.$code.'</a></b>';
+
+                $mail->send();
+                echo 'Message has been sent';
+            } catch (Exception $e) {
+                echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
             }
-        } else {
-            $msg = "<div class='alert alert-danger'><i class='bi bi-exclamation-triangle'></i> No account found with this email address.</div>";
-            logResetAttempt($email, false);
+            echo "</div>";        
+            $msg = "<div class='alert alert-info'>We've send a verification link on your email address.</div>";
         }
+    } else {
+        $msg = "<div class='alert alert-danger'>$email - This email address do not found.</div>";
     }
 }
 
@@ -153,87 +131,24 @@ if (isset($_POST['reset'])) {
   </script>
 
   <script>
-    // Function to display the SweetAlert based on success state
+    // Function to display the SweetAlert
     function displaySweetAlert() {
-      <?php if ($success): ?>
-        Swal.fire({
-          position: 'center',
-          icon: 'success',
-          title: 'Email Sent Successfully!',
-          text: 'Password reset link has been sent to your email address. Please check your inbox and spam folder.',
-          showConfirmButton: true,
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#c41e67'
-        });
-      <?php else: ?>
-        // Only show alert if there's an error message
-        <?php if (!empty($msg) && !$success): ?>
-          Swal.fire({
-            position: 'center',
-            icon: 'error',
-            title: 'Error',
-            html: '<?php echo addslashes($msg); ?>',
-            showConfirmButton: true,
-            confirmButtonText: 'Try Again',
-            confirmButtonColor: '#c41e67'
-          });
-        <?php endif; ?>
-      <?php endif; ?>
+      Swal.fire({
+        position: 'center',
+        icon: 'success',
+        title: 'We have send a reset link on your email address',
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
 
     // Handle the click on the "Send reset link" button
-    document.getElementById('resetLinkButton').addEventListener('click', function (e) {
-      e.preventDefault();
-      
-      // Get email input
-      const emailInput = document.getElementById('resetButton');
-      const email = emailInput.value.trim();
-      
-      // Validate email
-      if (!email) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Email Required',
-          text: 'Please enter your email address.',
-          confirmButtonColor: '#c41e67'
-        });
-        return;
-      }
-      
-      if (!isValidEmail(email)) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Invalid Email',
-          text: 'Please enter a valid email address.',
-          confirmButtonColor: '#c41e67'
-        });
-        return;
-      }
-      
-      // Show loading
-      Swal.fire({
-        title: 'Sending Reset Link...',
-        text: 'Please wait while we send the password reset link to your email.',
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
-      
+    document.getElementById('resetLinkButton').addEventListener('click', function () {
+      // Display the SweetAlert
+      displaySweetAlert();
+
       // Submit the form
       document.getElementById('resetForm').submit();
-    });
-    
-    // Email validation function
-    function isValidEmail(email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(email);
-    }
-    
-    // Display alert on page load if there's a message
-    document.addEventListener('DOMContentLoaded', function() {
-      displaySweetAlert();
     });
   </script>
 

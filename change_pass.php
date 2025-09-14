@@ -1,99 +1,33 @@
 <?php
-session_start();
-
-// Include configuration files
-require_once __DIR__ . '/config/mailgun_config.php';
-require_once __DIR__ . '/config/email_templates.php';
-require_once __DIR__ . '/db.php';
 
 $msg = "";
-$valid_token = false;
-$user_email = "";
 
-if (isset($_GET['token'])) {
-    $token = mysqli_real_escape_string($conn, $_GET['token']);
-    
-    // Check if token exists and is valid
-    $token_query = "SELECT email, expires_at FROM password_reset_tokens 
-                    WHERE token = ? AND used = 0 AND expires_at > NOW()";
-    $stmt = mysqli_prepare($conn, $token_query);
-    mysqli_stmt_bind_param($stmt, 's', $token);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    
-    if (mysqli_num_rows($result) > 0) {
-        $token_data = mysqli_fetch_assoc($result);
-        $user_email = $token_data['email'];
-        $valid_token = true;
-        
+include 'db.php';
+
+if (isset($_GET['reset'])) {
+    if (mysqli_num_rows(mysqli_query($conn, "SELECT * FROM users WHERE code='{$_GET['reset']}'")) > 0) {
         if (isset($_POST['reset'])) {
-            $password = $_POST['password'];
-            $confirm_password = $_POST['confirm_password'];
-            
-            // Validate passwords
-            if (empty($password) || empty($confirm_password)) {
-                $msg = "<div class='alert alert-danger'><i class='bi bi-exclamation-triangle'></i> Please fill in all fields.</div>";
-            } elseif (strlen($password) < 6) {
-                $msg = "<div class='alert alert-danger'><i class='bi bi-exclamation-triangle'></i> Password must be at least 6 characters long.</div>";
-            } elseif ($password !== $confirm_password) {
-                $msg = "<div class='alert alert-danger'><i class='bi bi-exclamation-triangle'></i> Password and Confirm Password do not match.</div>";
-            } else {
-                // Hash the new password using password_hash for better security
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                
-                // Update user password
-                $update_query = "UPDATE users SET password = ? WHERE email = ?";
-                $stmt = mysqli_prepare($conn, $update_query);
-                mysqli_stmt_bind_param($stmt, 'ss', $hashed_password, $user_email);
-                
-                if (mysqli_stmt_execute($stmt)) {
-                    // Mark token as used
-                    $mark_used_query = "UPDATE password_reset_tokens SET used = 1 WHERE token = ?";
-                    $stmt = mysqli_prepare($conn, $mark_used_query);
-                    mysqli_stmt_bind_param($stmt, 's', $token);
-                    mysqli_stmt_execute($stmt);
-                    
-                    // Get user info for success email
-                    $user_query = "SELECT username FROM users WHERE email = ?";
-                    $stmt = mysqli_prepare($conn, $user_query);
-                    mysqli_stmt_bind_param($stmt, 's', $user_email);
-                    mysqli_stmt_execute($stmt);
-                    $user_result = mysqli_stmt_get_result($stmt);
-                    $user = mysqli_fetch_assoc($user_result);
-                    
-                    // Send success email
-                    $html_body = getPasswordResetSuccessTemplate($user['username']);
-                    $text_body = "Your password has been successfully reset! You can now log in to your account.";
-                    
-                    $email_result = sendMailgunEmail(
-                        $user_email,
-                        'Password Reset Successful - Botolan Civil Registry',
-                        $html_body,
-                        $text_body
-                    );
-                    
-                    // Log the successful reset
-                    logResetAttempt($user_email, true);
-                    logEmailAttempt($user_email, 'password_reset_success', $email_result['success']);
-                    
-                    // Redirect to login with success message
-                    header("Location: login.php?reset=success");
-                    exit();
-                } else {
-                    $msg = "<div class='alert alert-danger'><i class='bi bi-exclamation-triangle'></i> Database error. Please try again later.</div>";
+            $password = mysqli_real_escape_string($conn, md5($_POST['password']));
+            $confirm_password = mysqli_real_escape_string($conn, md5($_POST['confirm_password']));
+
+            if ($password === $confirm_password) {
+                $query = mysqli_query($conn, "UPDATE users SET password='{$password}', code='' WHERE code='{$_GET['reset']}'");
+
+                if ($query) {
+                    header("Location: login.php");
                 }
+            } else {
+                $msg = "<div class='alert alert-danger'>Password and Confirm Password do not match.</div>";
             }
         }
     } else {
-        $msg = "<div class='alert alert-danger'><i class='bi bi-exclamation-triangle'></i> Invalid or expired reset link. Please request a new password reset.</div>";
+        $msg = "<div class='alert alert-danger'>Reset Link do not match.</div>";
     }
 } else {
     header("Location: forgot_pass.php");
-    exit();
 }
 
 ?>
-
 
 
 
@@ -127,7 +61,7 @@ if (isset($_GET['token'])) {
 
                   
 
-                  <form class="mx-1 mx-md-4" action="change_pass.php?token=<?php echo $_GET['token']; ?>" method="post">
+                  <form class="mx-1 mx-md-4" action="change_pass.php?reset=<?php echo $_GET['reset']; ?>" method="post">
                     <div class="d-flex flex-row align-items-center mb-4">
                       <i class="fas fa-user fa-lg me-3 fa-fw"></i>
                       <div class="form-outline flex-fill mb-0">

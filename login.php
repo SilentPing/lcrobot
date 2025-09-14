@@ -168,12 +168,6 @@ if (isset($_POST['login'])) {
           <p align="center">I don't have any account <a href="registration.php" class="text-danger" style="font-weight:600;text-decoration:none;">Register here</a></p>
            </form>
           <p align="center">Forgot password? <a href="forgot_pass.php" class="text-danger" style="font-weight:600;text-decoration:none;">Click here</a></p>
-          
-          <?php if (isset($_GET['reset']) && $_GET['reset'] === 'success'): ?>
-            <div class="alert alert-success text-center" style="margin-top: 20px;">
-              <i class="bi bi-check-circle"></i> Password reset successful! You can now log in with your new password.
-            </div>
-          <?php endif; ?>
         </div>
       </div>
     </div>
