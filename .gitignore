@@ -1,2 +1,14 @@
 .env
 /uploads/
+
+# Mailgun Configuration (contains sensitive API keys)
+config/mailgun_config.php
+
+# Keep the example file for reference
+!config/mailgun_config.example.php
+
+# Logs directory
+logs/
+
+# Database files with sensitive data
+database/*.sql
