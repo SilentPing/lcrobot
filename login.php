@@ -139,11 +139,11 @@ if (isset($_POST['login'])) {
     <div class="container py-5 h-100">
       <div class="row d-flex align-items-center justify-content-center h-100">
         <div class="col-md-8 col-lg-5 col-xl-5">
-          <img src="images/lcro.jpg" class="img-fluid" alt="Phone image" height="100px" width="500px">
+          <img src="images/lcrobot.png" class="img-fluid" alt="Phone image" height="100px" width="500px">
         </div>
         <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
           <form action="" method="post">
-            <p class="text-center h1 fw-bold mb-4 mx-1 mx-md-1 mt-3">A Web Based Civil Registry <br>Portal for Botolan Zambales</p>
+            <p class="text-center h1 fw-bold mb-4 mx-1 mx-md-1 mt-3">A Web Based Civil Registry <br>Portal for Botolan</p>
             
               <!-- Email input -->
             <div class="form-floating mb-4">
