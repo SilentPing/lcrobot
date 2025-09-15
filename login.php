@@ -143,7 +143,7 @@ if (isset($_POST['login'])) {
         </div>
         <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
           <form action="" method="post">
-            <p class="text-center h1 fw-bold mb-4 mx-1 mx-md-1 mt-3">A Web Based Civil Registry <br>Portal for Botolan Zambales</p>
+            <p class="text-center h1 fw-bold mb-4 mx-1 mx-md-1 mt-3">A Web Based Civil Registry <br>Portal for Botolan Zambales | Philippines</p>
             
               <!-- Email input -->
             <div class="form-floating mb-4">
