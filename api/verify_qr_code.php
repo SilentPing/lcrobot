@@ -111,7 +111,7 @@ function getDocumentDetails($document_type, $user_id, $conn) {
                        maiden_wife_mn, marriage_date, place_of_marriage, purpose_of_request
                 FROM marriage_tbl 
                 WHERE id_user = ? 
-                ORDER BY id DESC 
+                ORDER BY id_marriage DESC 
                 LIMIT 1
             ");
             break;
@@ -122,7 +122,7 @@ function getDocumentDetails($document_type, $user_id, $conn) {
                        cause_of_death, purpose_of_request
                 FROM death_tbl 
                 WHERE id_user = ? 
-                ORDER BY id DESC 
+                ORDER BY id_death DESC 
                 LIMIT 1
             ");
             break;

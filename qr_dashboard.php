@@ -383,3 +383,4 @@ function printReceipt() {
 </script>
 
 <?php include 'includes/footer.php'; ?>
+<?php include 'includes/script.php'; ?>

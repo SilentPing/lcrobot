@@ -181,7 +181,7 @@ try {
 <body>
     <div class="receipt">
         <div class="header">
-            <h1>LOCAL CIVIL REGISTRY OFFICE</h1>
+            <h1>LOCAL CIVIL REGISTRY OFFICE BOTOLAN, ZAMBALES</h1>
             <h2>Document Receipt</h2>
         </div>
         

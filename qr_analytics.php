@@ -206,7 +206,9 @@ include 'includes/navbar.php';
     </div>
 </div>
 
-<!-- Include Chart.js -->
+<?php include 'includes/footer.php'; ?>
+<?php include 'includes/script.php'; ?>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>

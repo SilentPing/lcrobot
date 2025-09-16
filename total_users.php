@@ -121,7 +121,7 @@ include('includes/navbar.php');
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">User Details</h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
@@ -129,7 +129,7 @@ include('includes/navbar.php');
                 <!-- Content will be loaded here -->
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -141,7 +141,7 @@ include('includes/navbar.php');
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit User Profile</h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-bs-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>

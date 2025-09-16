@@ -39,12 +39,6 @@
 </li>
 
 <li class="nav-item">
-  <a class="nav-link" href="reports.php">
-    <i class="fas fa-chart-bar"></i>
-    <span>Reports</span></a>
-</li>
-
-<li class="nav-item">
   <a class="nav-link" href="qr_dashboard.php">
     <i class="fas fa-qrcode"></i>
     <span>QR Dashboard</span></a>
@@ -119,6 +113,11 @@
     <i class="bi bi-graph-up-arrow"></i>
     <span>Request Reports</span></a>
 </li> -->
+<li class="nav-item">
+  <a class="nav-link" href="reports.php">
+    <i class="fas fa-chart-bar"></i>
+    <span>Reports</span></a>
+</li>
 
 <li class="nav-item">
   <a class="nav-link" href="inquiries.php">
@@ -131,6 +130,13 @@
     <i class="bi bi-person-lines-fill"></i>
     <span>User Activity</span></a>
 </li>
+
+<li class="nav-item">
+  <a class="nav-link" href="claimed_documents.php">
+    <i class="fas fa-check-circle"></i>
+    <span>Claimed Documents</span></a>
+</li>
+
 
 <!-- Nav Item - Tables -->
 <li class="nav-item">

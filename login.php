@@ -76,7 +76,16 @@ if (isset($_POST['login'])) {
             $_SESSION['fname'] = $row['u_fn'];
             $_SESSION['id_user'] = $row['id_user'];
             $_SESSION['usertype'] = $row['usertype']; // Add usertype to session
-        $_SESSION['login_success'] = "Login Successful!";
+            $_SESSION['login_success'] = "Login Successful!";
+
+            // Update last_login timestamp
+            $update_login_query = "UPDATE users SET last_login = NOW() WHERE id_user = ?";
+            $update_stmt = $conn->prepare($update_login_query);
+            if ($update_stmt) {
+                $update_stmt->bind_param("i", $row['id_user']);
+                $update_stmt->execute();
+                $update_stmt->close();
+            }
 
         // Log user activity
         $user_id = $_SESSION['id_user'];
