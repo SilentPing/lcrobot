@@ -53,7 +53,7 @@ include('includes/navbar.php');
                                 $row_number++;
                             }
                         } else {
-                            include('includes/no_data_component.php');
+                
                         }
                         ?>
                     </tbody>

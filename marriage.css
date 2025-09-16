@@ -1,214 +1,5 @@
 /* ===== Google Font Import - Poppins ===== */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
-
-/* ===== Additional Modern Styling ===== */
-.form-section-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin: 25px 0 20px 0;
-    padding: 15px 20px;
-    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
-    color: white;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
-}
-
-/* ===== Step-by-Step Form Styling ===== */
-.progress-indicator {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 30px 0;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    position: relative;
-}
-
-.progress-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    flex: 1;
-    max-width: 200px;
-}
-
-.step-number {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: #e1e8ed;
-    color: #95a5a6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 18px;
-    margin-bottom: 10px;
-    transition: all 0.3s ease;
-    border: 3px solid #e1e8ed;
-}
-
-.step-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #95a5a6;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.progress-step.active .step-number {
-    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
-    color: white;
-    border-color: #ff6b9d;
-    box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
-}
-
-.progress-step.active .step-title {
-    color: #2c3e50;
-}
-
-.progress-step.completed .step-number {
-    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-    color: white;
-    border-color: #27ae60;
-}
-
-.progress-step.completed .step-title {
-    color: #27ae60;
-}
-
-/* Progress line between steps */
-.progress-step:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    top: 25px;
-    right: -50%;
-    width: 100%;
-    height: 3px;
-    background-color: #e1e8ed;
-    z-index: -1;
-    transition: all 0.3s ease;
-}
-
-.progress-step.completed:not(:last-child)::after {
-    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-}
-
-/* Form Steps */
-.form-step {
-    display: none;
-    animation: fadeIn 0.5s ease-in-out;
-}
-
-.form-step.active {
-    display: block;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-/* Step Navigation */
-.step-navigation {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 40px;
-    padding: 20px 0;
-    background-color: #fff;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-.btn-prev, .btn-next, .btn-submit {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 55px;
-    min-width: 160px;
-    border: none;
-    outline: none;
-    color: #fff;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 16px;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-prev {
-    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-    box-shadow: 0 4px 15px rgba(149, 165, 166, 0.4);
-}
-
-.btn-next {
-    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
-    box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
-}
-
-.btn-submit {
-    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
-}
-
-.btn-prev:hover, .btn-next:hover, .btn-submit:hover {
-    transform: translateY(-3px);
-}
-
-.btn-prev:hover {
-    box-shadow: 0 8px 25px rgba(149, 165, 166, 0.6);
-}
-
-.btn-next:hover {
-    box-shadow: 0 8px 25px rgba(255, 107, 157, 0.6);
-}
-
-.btn-submit:hover {
-    box-shadow: 0 8px 25px rgba(39, 174, 96, 0.6);
-}
-
-.btn-prev i, .btn-next i, .btn-submit i {
-    margin: 0 8px;
-    font-size: 18px;
-}
-
-/* Mobile Responsiveness for Step Form */
-@media (max-width: 768px) {
-    .progress-indicator {
-        margin: 20px 0;
-        padding: 15px;
-    }
-    
-    .step-number {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
-    }
-    
-    .step-title {
-        font-size: 12px;
-    }
-    
-    .step-navigation {
-        flex-direction: column;
-        gap: 15px;
-        padding: 20px 15px;
-    }
-    
-    .btn-prev, .btn-next, .btn-submit {
-        width: 100%;
-        min-width: auto;
-    }
-}
-
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&display=swap');
 *{
     margin: 0;
     padding: 0;
@@ -217,51 +8,43 @@
 }
 body{
     min-height: 100vh;
-    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
-    padding: 20px 0;
-    font-family: 'Poppins', sans-serif;
-}
-.container{
-    position: relative;
-    max-width: 1000px;
-    width: 100%;
-    border-radius: 20px;
-    padding: 40px;
-    margin: 0 auto;
-    background-color: #fff;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    margin-bottom: 40px; /* Add bottom margin to prevent cutoff */
-}
-.container header{
-    position: relative;
-    font-size: 28px;
-    font-weight: 700;
-    color: #2c3e50;
-    text-align: center;
-    margin-bottom: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;
+    background: #FFC0CB;
+}
+.container{
+    position: relative;
+    max-width: 900px;
+    width: 100%;
+    border-radius: 6px;
+    padding: 30px;
+    margin: 0 15px;
+    background-color: #fff;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+}
+.container header{
+    position: relative;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
 }
 .container header::before{
     content: "";
     position: absolute;
-    left: 50%;
-    bottom: -8px;
-    height: 4px;
-    width: 60px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
-    transform: translateX(-50%);
+    left: 0;
+    bottom: -2px;
+    height: 3px;
+    width: 27px;
+    border-radius: 8px;
+    background-color: #4070f4;
 }
 .container form{
     position: relative;
-    margin-top: 30px;
-    background-color: #f8f9fa;
-    border-radius: 15px;
-    padding: 30px;
-    overflow: visible; /* Allow content to flow naturally */
+    margin-top: 16px;
+    min-height: 650px;
+    background-color: #fff;
+    overflow: hidden;
 }
 .container form .form{
     position: absolute;
@@ -299,44 +82,25 @@ form.secActive .form.first{
 }
 form .fields .input-field{
     display: flex;
-    width: calc(100% / 3 - 20px);
+    width: calc(100% / 3 - 15px);
     flex-direction: column;
-    margin: 8px 0;
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-}
-form .fields .input-field:hover{
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
+    margin: 4px 0;
 }
 .input-field label{
-    font-size: 13px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #2e2e2e;
 }
 .input-field input, select{
     outline: none;
     font-size: 14px;
     font-weight: 400;
     color: #333;
-    border-radius: 8px;
-    border: 2px solid #e1e8ed;
-    padding: 12px 15px;
-    height: 48px;
-    margin: 0;
-    transition: all 0.3s ease;
-    background-color: #fff;
-}
-.input-field input:focus, select:focus{
-    border-color: #ff6b9d;
-    box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
-    transform: translateY(-1px);
+    border-radius: 5px;
+    border: 1px solid #aaa;
+    padding: 0 15px;
+    height: 42px;
+    margin: 8px 0;
 }
 
 /* Mobile responsive form controls */
@@ -367,43 +131,24 @@ form .fields .input-field:hover{
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 55px;
-    max-width: 220px;
+    height: 45px;
+    max-width: 200px;
     width: 100%;
     border: none;
     outline: none;
     color: #fff;
-    border-radius: 12px;
-    margin: 15px 10px;
-    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
-    transition: all 0.3s ease;
+    border-radius: 5px;
+    margin: 25px 0;
+    background-color: #4070f4;
+    transition: all 0.3s linear;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 16px;
-    box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
-    position: relative;
-    overflow: hidden;
-}
-.container form button::before, .backBtn::before{
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-}
-.container form button:hover::before, .backBtn:hover::before{
-    left: 100%;
 }
 .container form .btnText{
     font-size: 14px;
     font-weight: 400;
 }
-form button:hover, .backBtn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255, 107, 157, 0.6);
+form button:hover{
+    background-color: #265df2;
 }
 form button i,
 form .backBtn i{
@@ -415,79 +160,52 @@ form .backBtn i{
 form .buttons{
     display: flex;
     align-items: center;
-    justify-content: center;
     position: relative;
     z-index: 10;
-    margin-top: 40px;
-    padding: 20px 0;
-    background-color: #fff;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    margin-top: 20px;
 }
 form .buttons button , .backBtn{
-    margin: 0 15px;
+    margin-right: 14px;
     position: relative;
     z-index: 10;
 }
 
 @media (max-width: 750px) {
-    .container {
-        padding: 20px;
-        margin: 10px;
-    }
-    
     .container form{
-        padding: 20px;
-        overflow: visible;
+        overflow-y: scroll;
     }
-    
+    .container form::-webkit-scrollbar{
+       display: none;
+    }
     form .fields .input-field{
-        width: calc(100% / 2 - 10px);
-        margin: 5px 0;
-        padding: 12px;
+        width: calc(100% / 2 - 15px);
     }
     
     /* Mobile button layout */
     form .buttons {
         flex-direction: column !important;
         align-items: center !important;
-        gap: 15px !important;
-        margin-top: 30px;
-        padding: 25px 20px;
+        gap: 10px !important;
     }
     
     form .buttons button, 
     form .buttons .backBtn {
         width: 100% !important;
         max-width: 100% !important;
-        margin: 0 !important;
-        min-height: 55px !important;
-        font-size: 16px !important;
+        margin: 5px 0 !important;
+        min-height: 48px !important;
     }
 }
 
 @media (max-width: 550px) {
-    .container {
-        padding: 15px;
-        margin: 5px;
-    }
-    
     form .fields .input-field{
         width: 100%;
-        margin: 8px 0;
-        padding: 15px;
     }
     
     /* Extra small mobile button layout */
-    form .buttons {
-        padding: 20px 15px;
-        margin-top: 25px;
-    }
-    
     form .buttons button, 
     form .buttons .backBtn {
-        min-height: 55px !important;
+        min-height: 48px !important;
         font-size: 16px !important;
-        border-radius: 10px;
     }
 }

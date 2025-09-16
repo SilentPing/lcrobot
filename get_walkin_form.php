@@ -364,7 +364,7 @@ function getCenoForm() {
             </div>
             <div class="col-md-6">
                 <div class="mb-3">
-                    <label for="contact_no" class="form-label">Contact Number * <small class="text-muted">(Primary communication method)</small></label>
+                    <label for="contact_no" class="form-label">Contact Number * <small class="text-muted">(Please Provide Your Contact Number)</small></label>
                     <input type="tel" class="form-control" id="contact_no" name="contact_no" required placeholder="09XXXXXXXXX" pattern="09[0-9]{9}">
                 </div>
             </div>

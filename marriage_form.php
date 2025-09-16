@@ -285,8 +285,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class="container">
          <header>
-            <img src="images/civreg.jpg" alt="MCRO Logo" class="mcro-logo">
-            <span>Fill up the Request Form</span>
+            <img src="images/civreg.jpg" alt="" class="mcro-logo">
+        Fill up the Request Form
          </header>
 
         <form method="POST" action="">
