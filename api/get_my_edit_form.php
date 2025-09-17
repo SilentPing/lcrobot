@@ -24,15 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $user_id = intval($_GET['user_id']);
+    // Use session user_id directly (users can only edit their own profile)
+    $user_id = intval($_SESSION['id_user']);
     
-    // Security check: Users can only view their own profile
-    if ($user_id !== $_SESSION['id_user']) {
-        throw new Exception('Unauthorized: You can only view your own profile');
-    }
     
     if (!$user_id) {
-        throw new Exception('Invalid user ID');
+        throw new Exception('Invalid user ID - not logged in');
     }
     
     // Fetch user details
@@ -176,9 +173,9 @@ try {
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="middlename">Middle Name</label>
+                            <label for="middlename">Middle Name <span class="text-muted">(Optional)</span></label>
                             <input type="text" class="form-control" id="middlename" name="middlename" 
-                                   value="' . htmlspecialchars($user['u_mn']) . '">
+                                   value="' . htmlspecialchars($user['u_mn'] ?? '') . '" placeholder="Middle Name (Optional)">
                         </div>
                     </div>
                     <div class="col-md-6">

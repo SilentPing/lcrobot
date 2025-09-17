@@ -54,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve data from the form
     $lastname = $_POST["lastname"];
     $firstname = $_POST["firstname"];
-    $middlename = $_POST["middlename"];
+    $middlename = !empty($_POST["middlename"]) ? trim($_POST["middlename"]) : '';
     $pob_country = $_POST["pob_country"];
     $pob_province = $_POST["pob_province"];
     $pob_municipality = $_POST["pob_municipality"];
@@ -319,8 +319,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
                         <div class="input-field exclude-popover">
-                            <label>Middle Name</label>
-                            <input type="text" name="middlename" class="form-control" value="<?php echo $u_mn; ?>" required>
+                            <label>Middle Name <span class="text-muted">(Optional)</span></label>
+                            <input type="text" name="middlename" class="form-control" value="<?php echo $u_mn; ?>" placeholder="Middle Name (Optional)">
                         </div>
 
                         <div class="input-field exclude-popover">

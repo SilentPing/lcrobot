@@ -69,7 +69,7 @@ try {
 function updateMyProfile($conn, $user_id, $data) {
     $firstname = mysqli_real_escape_string($conn, trim($data['firstname']));
     $lastname = mysqli_real_escape_string($conn, trim($data['lastname']));
-    $middlename = mysqli_real_escape_string($conn, trim($data['middlename']));
+    $middlename = !empty(trim($data['middlename'])) ? mysqli_real_escape_string($conn, trim($data['middlename'])) : null;
     $username = mysqli_real_escape_string($conn, trim($data['username']));
     $email = mysqli_real_escape_string($conn, trim($data['email']));
     $contact_no = mysqli_real_escape_string($conn, trim($data['contact_no']));

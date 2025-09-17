@@ -9,6 +9,7 @@ if (!isset($_SESSION['name'])) {
 
 // Get current user data
 $user_id = $_SESSION['id_user'];
+
 $query = "SELECT * FROM users WHERE id_user = ?";
 $stmt = mysqli_prepare($conn, $query);
 mysqli_stmt_bind_param($stmt, 'i', $user_id);
@@ -210,7 +211,14 @@ $barangayName = getBarangayName($user['street_brgy']);
                                 </div>
                             <?php endif; ?>
                         </div>
-                        <h2 class="mb-2"><?php echo htmlspecialchars($user['u_fn'] . ' ' . $user['u_ln']); ?></h2>
+                        <h2 class="mb-2"><?php 
+                        $displayName = $user['u_fn'];
+                        if (!empty($user['u_mn'])) {
+                            $displayName .= ' ' . $user['u_mn'];
+                        }
+                        $displayName .= ' ' . $user['u_ln'];
+                        echo htmlspecialchars($displayName);
+                        ?></h2>
                         <p class="mb-3">@<?php echo htmlspecialchars($user['username']); ?></p>
                         <span class="status-badge">
                             <i class="fas fa-check-circle me-1"></i>Active User
@@ -249,7 +257,14 @@ $barangayName = getBarangayName($user['street_brgy']);
                                         <i class="fas fa-user me-2 text-primary"></i>Full Name
                                     </div>
                                     <div class="info-value">
-                                        <?php echo htmlspecialchars($user['u_fn'] . ' ' . $user['u_mn'] . ' ' . $user['u_ln']); ?>
+                                        <?php 
+                                        $fullName = $user['u_fn'];
+                                        if (!empty($user['u_mn'])) {
+                                            $fullName .= ' ' . $user['u_mn'];
+                                        }
+                                        $fullName .= ' ' . $user['u_ln'];
+                                        echo htmlspecialchars($fullName);
+                                        ?>
                                     </div>
                                 </div>
                                 
@@ -314,7 +329,6 @@ $barangayName = getBarangayName($user['street_brgy']);
         $.ajax({
             url: 'api/get_my_edit_form.php',
             type: 'GET',
-            data: { user_id: <?php echo $_SESSION['id_user']; ?> },
             success: function(response) {
                 if (response.success) {
                     $('#editProfileContent').html(response.html);

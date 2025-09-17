@@ -22,9 +22,14 @@ include('includes/navbar.php');
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-file-text-fill"></i> Civil Requests</h6>
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#walkinModal">
-                <i class="bi bi-person-plus-fill"></i> Walk-in Request
-            </button>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-info" onclick="showGenderReport()">
+                    <i class="bi bi-graph-up"></i> Gender Report
+                </button>
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#walkinModal">
+                    <i class="bi bi-person-plus-fill"></i> Walk-in Request
+                </button>
+            </div>
         </div>
 
         <style>
@@ -223,6 +228,7 @@ include('includes/navbar.php');
                             <th>#</th>
                             <th>Registration Date</th>
                             <th>Name</th>
+                            <th>Gender</th>
                             <th>Type of Request</th>
                             <th>Contact Number</th>
                             <th>Email</th>
@@ -330,6 +336,31 @@ include('includes/navbar.php');
                                     <td><?php echo $row_number; ?></td>
                                     <td><?php echo $row['registration_date']; ?></td>
                                     <td><?php echo $row['registrar_name']; ?></td>
+                                    <td>
+                                        <?php
+                                        $gender = $row['gender'] ?? 'Male';
+                                        $gender_class = '';
+                                        $gender_icon = '';
+                                        
+                                        switch($gender) {
+                                            case 'Male':
+                                                $gender_class = 'badge-primary';
+                                                $gender_icon = 'fas fa-mars';
+                                                break;
+                                            case 'Female':
+                                                $gender_class = 'badge-danger';
+                                                $gender_icon = 'fas fa-venus';
+                                                break;
+                                            case 'Other':
+                                                $gender_class = 'badge-secondary';
+                                                $gender_icon = 'fas fa-genderless';
+                                                break;
+                                        }
+                                        ?>
+                                        <span class="badge <?php echo $gender_class; ?>">
+                                            <i class="<?php echo $gender_icon; ?>"></i> <?php echo $gender; ?>
+                                        </span>
+                                    </td>
                                     <td><?php echo $row['type_request']; ?></td>
                                     <td><?php echo $contact_no; ?></td>
                                     <td><?php echo $email; ?></td>
@@ -725,6 +756,17 @@ $(document).ready(function() {
             }
         });
         
+        // Email is optional for walk-in requests, so don't validate it
+        var emailInput = form.find('[name="email"]');
+        if (emailInput.length > 0) {
+            var emailValue = emailInput.val();
+            if (!emailValue || emailValue.trim() === '') {
+                // Email is optional, so we don't add it to errors
+                // Just clear the field value
+                emailInput.val('');
+            }
+        }
+        
         // Additional validations
         if (formType === 'birth' || formType === 'ceno') {
             // Validate date of birth
@@ -753,10 +795,12 @@ $(document).ready(function() {
         
         // Show errors if any
         if (errors.length > 0) {
+            var errorMessage = 'Please fill in the following required fields:\n\n' + errors.join('\n');
             Swal.fire({
                 icon: 'error',
                 title: 'Validation Error',
-                text: 'All Fields are Required',
+                text: errorMessage,
+                width: '500px',
                 confirmButtonText: 'OK'
             });
             return false;
@@ -800,6 +844,7 @@ $(document).ready(function() {
                     {name: 'dob', label: 'Date of Birth'},
                     {name: 'dod', label: 'Date of Death'},
                     {name: 'place_of_death', label: 'Place of Death'},
+                    {name: 'gender', label: 'Gender'},
                     {name: 'purpose_of_request', label: 'Purpose of Request'},
                     {name: 'applicant_name', label: 'Applicant Full Name'},
                     {name: 'contact_no', label: 'Contact Number'}
@@ -883,6 +928,7 @@ $(document).ready(function() {
             'pob_municipality': 'Place of Birth (City/Municipality)',
             'dob': 'Date of Birth',
             'sex': 'Sex',
+            'gender': 'Gender',
             'relationship': 'Relationship to Document Owner',
             'fath_ln': 'Father\'s Last Name',
             'fath_fn': 'Father\'s First Name',
@@ -959,4 +1005,136 @@ $(document).ready(function() {
         });
     }
 });
+
+// Gender Report Function
+function showGenderReport() {
+    // Fetch gender statistics
+    fetch('api/get_gender_statistics.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showGenderReportModal(data.statistics);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Failed to load gender statistics'
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to load gender statistics'
+            });
+        });
+}
+
+function showGenderReportModal(stats) {
+    const total = stats.total;
+    const maleCount = stats.male || 0;
+    const femaleCount = stats.female || 0;
+    const otherCount = stats.other || 0;
+    
+    const malePercentage = total > 0 ? ((maleCount / total) * 100).toFixed(1) : 0;
+    const femalePercentage = total > 0 ? ((femaleCount / total) * 100).toFixed(1) : 0;
+    const otherPercentage = total > 0 ? ((otherCount / total) * 100).toFixed(1) : 0;
+    
+    const reportContent = `
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3><i class="fas fa-mars"></i> ${maleCount}</h3>
+                        <p class="mb-0">Male Requestors</p>
+                        <small>${malePercentage}%</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-danger text-white">
+                    <div class="card-body text-center">
+                        <h3><i class="fas fa-venus"></i> ${femaleCount}</h3>
+                        <p class="mb-0">Female Requestors</p>
+                        <small>${femalePercentage}%</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-secondary text-white">
+                    <div class="card-body text-center">
+                        <h3><i class="fas fa-genderless"></i> ${otherCount}</h3>
+                        <p class="mb-0">Other</p>
+                        <small>${otherPercentage}%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-12">
+                <h5>Summary</h5>
+                <p><strong>Total Requests:</strong> ${total}</p>
+                <p><strong>Male:</strong> ${maleCount} (${malePercentage}%)</p>
+                <p><strong>Female:</strong> ${femaleCount} (${femalePercentage}%)</p>
+                <p><strong>Other:</strong> ${otherCount} (${otherPercentage}%)</p>
+            </div>
+        </div>
+    `;
+    
+    Swal.fire({
+        title: 'Gender Statistics Report',
+        html: reportContent,
+        width: '600px',
+        showConfirmButton: true,
+        confirmButtonText: 'Close',
+        showCancelButton: true,
+        cancelButtonText: 'Export PDF'
+    }).then((result) => {
+        if (result.dismiss === Swal.DismissReason.cancel) {
+            // Export PDF functionality
+            exportGenderReportPDF();
+        }
+    });
+}
+
+// Export Gender Report PDF
+function exportGenderReportPDF() {
+    Swal.fire({
+        title: 'Generating PDF Report',
+        text: 'Please wait while we generate your gender statistics report...',
+        icon: 'info',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Create a form to submit the request
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'api/export_gender_report_pdf.php';
+    form.target = '_blank';
+    
+    document.body.appendChild(form);
+    
+    // Submit the form
+    form.submit();
+    
+    // Clean up
+    document.body.removeChild(form);
+    
+    // Close the loading alert after a short delay
+    setTimeout(() => {
+        Swal.close();
+        Swal.fire({
+            icon: 'success',
+            title: 'PDF Generated!',
+            text: 'Your gender statistics report has been generated and should start downloading shortly.',
+            confirmButtonText: 'OK'
+        });
+    }, 2000);
+}
 </script>

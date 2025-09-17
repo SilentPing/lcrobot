@@ -482,7 +482,7 @@ function releaseDocumentComplete(requestId, qrReference, registrarName, typeRequ
     formData.append('release_method', 'qr_verified');
     
     // Create SMS message with PDF receipt
-    const smsMessage = `Your ${typeRequest} document is ready for pickup at MCRO Botolan. Please download and print your receipt from the link below, then bring the printed receipt and a valid ID to the LCRO office for verification and claiming. Thank you!`;
+    const smsMessage = `Your ${typeRequest} document is ready for pickup at LCRO Office. Please download and print your receipt from the link below, then bring the printed receipt and the exact payment amount and a valid ID to the LCRO office for verification and claiming. Thank you!`;
     formData.append('sms_message', smsMessage);
     formData.append('send_pdf_receipt', 'true');
     

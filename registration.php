@@ -6,7 +6,7 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="icon" href="images/civ.png" type="images/png">
+  <link rel="icon" href="images/lcrobot.png" type="images/png">
 
 
   <!-- Bootstrap CSS v5.2.1 -->
@@ -175,7 +175,7 @@
         $username = stripslashes($_REQUEST['username']);
         $u_ln = $_POST['u_ln'];
         $u_fn = $_POST['u_fn'];
-        $u_mn = $_POST['u_mn'];
+        $u_mn = !empty($_POST['u_mn']) ? trim($_POST['u_mn']) : null;
         $username = $_POST['username'];
         $email = $_POST['email'];
         $password = $_POST['password'];
@@ -204,7 +204,7 @@
         // $u_ln = mysqli_real_escape_string($con, $u_ln);
         $u_ln = mysqli_real_escape_string($conn, $u_ln);
         $u_fn = mysqli_real_escape_string($conn, $u_fn);
-        $u_mn = mysqli_real_escape_string($conn, $u_mn);
+        $u_mn = $u_mn ? mysqli_real_escape_string($conn, $u_mn) : null;
         $username = mysqli_real_escape_string($conn, $username);
         $email    = stripslashes($_REQUEST['email']);
         $email    = mysqli_real_escape_string($conn, $email);
@@ -222,7 +222,7 @@
 
       $hashed_password = password_hash($password, PASSWORD_DEFAULT);
       $query = "INSERT INTO `users` (u_ln, u_fn, u_mn, username, email, password, contact_no, create_datetime, house_no, street_brgy, city_municipality, province, usertype)
-      VALUES ('$u_ln', '$u_fn', '$u_mn', '$username', '$email', '$hashed_password', '$contact_no', '$create_datetime', '$house_no', '$street_brgy', '$city_municipality', '$province', '" . ($is_admin ? 'admin' : 'user') . "')";
+      VALUES ('$u_ln', '$u_fn', " . ($u_mn ? "'$u_mn'" : "NULL") . ", '$username', '$email', '$hashed_password', '$contact_no', '$create_datetime', '$house_no', '$street_brgy', '$city_municipality', '$province', '" . ($is_admin ? 'admin' : 'user') . "')";
 
         $result   = mysqli_query($conn, $query);
 
@@ -293,8 +293,8 @@
                   </div>
                   <div class="col-12 col-md-4">
                     <div class="form-outline">
-                      <label class="form-label" for="middleName">Middle Name</label>
-                      <input type="text" id="middleName" class="form-control form-control-lg" name="u_mn" autocomplete="off" placeholder="Middle Name" required />
+                      <label class="form-label" for="middleName">Middle Name <span class="text-muted">(Optional)</span></label>
+                      <input type="text" id="middleName" class="form-control form-control-lg" name="u_mn" autocomplete="off" placeholder="Middle Name (Optional)" />
                     </div>
                   </div>
                 </div>

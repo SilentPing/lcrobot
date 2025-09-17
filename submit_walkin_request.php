@@ -19,7 +19,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Server-side validation
         $validationErrors = validateWalkinRequest($_POST, $formType);
         if (!empty($validationErrors)) {
-            echo json_encode(['success' => false, 'message' => 'All Fields are Required']);
+            $errorMessage = 'Please fill in the following required fields: ' . implode(', ', $validationErrors);
+            echo json_encode(['success' => false, 'message' => $errorMessage]);
             exit;
         }
         
@@ -78,7 +79,7 @@ function validateWalkinRequest($data, $formType) {
         case 'death':
             $requiredFields = [
                 'deceased_ln', 'deceased_fn', 'deceased_mn', 'dob', 'dod', 
-                'place_of_death', 'purpose_of_request', 'applicant_name', 'contact_no'
+                'place_of_death', 'gender', 'purpose_of_request', 'applicant_name', 'contact_no'
             ];
             break;
         case 'marriage':
@@ -95,9 +96,15 @@ function validateWalkinRequest($data, $formType) {
     
     // Check required fields
     foreach ($requiredFields as $field) {
-        if (empty($data[$field]) || trim($data[$field]) === '') {
+        if (!isset($data[$field]) || empty($data[$field]) || trim($data[$field]) === '') {
             $errors[] = ucfirst(str_replace('_', ' ', $field)) . ' is required';
         }
+    }
+    
+    // Email is optional for walk-in requests, so remove it from validation if it's empty
+    if (isset($data['email']) && (empty($data['email']) || trim($data['email']) === '')) {
+        // Email is optional, so we don't add it to errors
+        unset($data['email']); // Remove empty email from data
     }
     
     // Date validations
@@ -200,7 +207,8 @@ function submitBirthRequest($data) {
         if ($conn->query($civRecordSql) === TRUE) {
             // Insert into reqtracking_tbl with applicant's contact info
             $email = !empty($data['email']) ? $data['email'] : '';
-            $reqTrackingSql = "INSERT INTO reqtracking_tbl (type_request, registration_date, registrar_name, user_id, status, contact_no, email) VALUES ('{$data['type_request']}', '$registration_date', '{$data['applicant_name']}', '{$data['id_user']}', 'Pending', '{$data['contact_no']}', '$email')";
+            $gender = $data['gender'] ?? 'Male'; // Use gender field for death requests
+            $reqTrackingSql = "INSERT INTO reqtracking_tbl (type_request, registration_date, registrar_name, user_id, status, contact_no, email, gender) VALUES ('{$data['type_request']}', '$registration_date', '{$data['applicant_name']}', '{$data['id_user']}', 'Pending', '{$data['contact_no']}', '$email', '$gender')";
             $conn->query($reqTrackingSql);
             
             return true;
@@ -254,7 +262,8 @@ function submitDeathRequest($data) {
         if ($conn->query($civRecordSql) === TRUE) {
             // Insert into reqtracking_tbl with applicant's contact info
             $email = !empty($data['email']) ? $data['email'] : '';
-            $reqTrackingSql = "INSERT INTO reqtracking_tbl (type_request, registration_date, registrar_name, user_id, status, contact_no, email) VALUES ('{$data['type_request']}', '$registration_date', '{$data['applicant_name']}', '{$data['id_user']}', 'Pending', '{$data['contact_no']}', '$email')";
+            $gender = $data['gender'] ?? 'Male'; // Use gender field for death requests
+            $reqTrackingSql = "INSERT INTO reqtracking_tbl (type_request, registration_date, registrar_name, user_id, status, contact_no, email, gender) VALUES ('{$data['type_request']}', '$registration_date', '{$data['applicant_name']}', '{$data['id_user']}', 'Pending', '{$data['contact_no']}', '$email', '$gender')";
             $conn->query($reqTrackingSql);
             
             return true;
@@ -311,7 +320,8 @@ function submitMarriageRequest($data) {
         if ($conn->query($civRecordSql) === TRUE) {
             // Insert into reqtracking_tbl with applicant's contact info
             $email = !empty($data['email']) ? $data['email'] : '';
-            $reqTrackingSql = "INSERT INTO reqtracking_tbl (type_request, registration_date, registrar_name, user_id, status, contact_no, email) VALUES ('{$data['type_request']}', '$registration_date', '{$data['applicant_name']}', '{$data['id_user']}', 'Pending', '{$data['contact_no']}', '$email')";
+            $gender = $data['gender'] ?? 'Male'; // Use gender field for death requests
+            $reqTrackingSql = "INSERT INTO reqtracking_tbl (type_request, registration_date, registrar_name, user_id, status, contact_no, email, gender) VALUES ('{$data['type_request']}', '$registration_date', '{$data['applicant_name']}', '{$data['id_user']}', 'Pending', '{$data['contact_no']}', '$email', '$gender')";
             $conn->query($reqTrackingSql);
             
             return true;
