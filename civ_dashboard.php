@@ -485,6 +485,69 @@
 
 <?php unset($_SESSION['login_success']); } ?>
 
+<!-- Birthplace Warning Modal -->
+<div class="modal fade" id="birthplaceWarningModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="birthplaceWarningModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h1 class="modal-title fs-5" id="birthplaceWarningModalLabel">
+          <i class="fas fa-exclamation-triangle"></i> Important Notice
+        </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="min-height: 400px">
+        <div class="alert alert-warning" role="alert">
+          <h4 class="alert-heading"><i class="fas fa-info-circle"></i> Civil Registry Document Request Policy</h4>
+          <hr>
+          <p class="mb-0"><strong>Please read this important information before proceeding:</strong></p>
+        </div>
+        
+        <div class="mb-4">
+          <h5><i class="fas fa-map-marker-alt text-primary"></i> Where to Request Civil Registry Documents</h5>
+          <p class="text-muted">Civil registry documents (Birth Certificate, Marriage Certificate, Death Certificate, CENOMAR) must be requested from the <strong>municipality where the event occurred</strong> (birth, marriage, or death).</p>
+        </div>
+
+        <div class="mb-4">
+          <h5><i class="fas fa-check-circle text-success"></i> You CAN request documents here if:</h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><i class="fas fa-baby text-info"></i> You were <strong>born in Botolan, Zambales</strong></li>
+            <li class="list-group-item"><i class="fas fa-heart text-danger"></i> You were <strong>married in Botolan, Zambales</strong></li>
+            <li class="list-group-item"><i class="fas fa-cross text-secondary"></i> The <strong>death occurred in Botolan, Zambales</strong></li>
+          </ul>
+        </div>
+
+        <div class="mb-4">
+          <h5><i class="fas fa-times-circle text-danger"></i> You CANNOT request documents here if:</h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><i class="fas fa-exclamation-triangle text-warning"></i> You were born in <strong>another municipality</strong></li>
+            <li class="list-group-item"><i class="fas fa-exclamation-triangle text-warning"></i> You were married in <strong>another municipality</strong></li>
+            <li class="list-group-item"><i class="fas fa-exclamation-triangle text-warning"></i> The death occurred in <strong>another municipality</strong></li>
+          </ul>
+        </div>
+
+        <div class="alert alert-info" role="alert">
+          <h6 class="alert-heading"><i class="fas fa-lightbulb"></i> What to do if you were born elsewhere:</h6>
+          <p class="mb-0">Please visit the Civil Registry Office of the municipality where you were born, married, or where the death occurred to request your civil registry documents.</p>
+        </div>
+
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="birthplaceConfirmation" required>
+          <label class="form-check-label" for="birthplaceConfirmation">
+            <strong>I confirm that I understand this policy and I was born/married in Botolan, Zambales (or the event occurred in Botolan, Zambales)</strong>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="redirectToOtherMunicipality()">
+          <i class="fas fa-external-link-alt"></i> I was born elsewhere
+        </button>
+        <button type="button" class="btn btn-primary" id="proceedButton" disabled onclick="proceedToRegistration()">
+          <i class="fas fa-check"></i> I understand, proceed
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Add this script at the end of your HTML, just before </body> tag -->
 <script>
@@ -512,6 +575,76 @@
     });
 
   });
+
+  // Birthplace Warning Modal Script
+  $(document).ready(function() {
+    // Check if user has already seen the birthplace warning
+    if (!sessionStorage.getItem('birthplaceWarningSeen')) {
+      // Show the birthplace warning modal after a short delay
+      setTimeout(function() {
+        $('#birthplaceWarningModal').modal('show');
+      }, 1000);
+    }
+
+    // Handle checkbox change
+    $('#birthplaceConfirmation').change(function() {
+      if ($(this).is(':checked')) {
+        $('#proceedButton').prop('disabled', false);
+      } else {
+        $('#proceedButton').prop('disabled', true);
+      }
+    });
+
+    // Handle modal close - mark as seen
+    $('#birthplaceWarningModal').on('hidden.bs.modal', function() {
+      sessionStorage.setItem('birthplaceWarningSeen', 'true');
+    });
+  });
+
+  // Function to redirect users who were born elsewhere
+  function redirectToOtherMunicipality() {
+    Swal.fire({
+      title: 'Redirecting...',
+      text: 'You will be redirected to information about requesting documents from other municipalities.',
+      icon: 'info',
+      confirmButtonText: 'OK'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // You can redirect to a page with information about other municipalities
+        // For now, we'll just close the modal
+        $('#birthplaceWarningModal').modal('hide');
+        sessionStorage.setItem('birthplaceWarningSeen', 'true');
+      }
+    });
+  }
+
+  // Function to proceed to registration
+  function proceedToRegistration() {
+    if ($('#birthplaceConfirmation').is(':checked')) {
+      // Mark as seen and redirect to registration
+      sessionStorage.setItem('birthplaceWarningSeen', 'true');
+      sessionStorage.setItem('birthplaceConfirmed', 'true');
+      $('#birthplaceWarningModal').modal('hide');
+      
+      Swal.fire({
+        title: 'Great!',
+        text: 'You can now proceed to register and request civil registry documents.',
+        icon: 'success',
+        confirmButtonText: 'Continue'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = 'registration.php';
+        }
+      });
+    } else {
+      Swal.fire({
+        title: 'Confirmation Required',
+        text: 'Please check the confirmation box to proceed.',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
+    }
+  }
 </script>
 
 </body>

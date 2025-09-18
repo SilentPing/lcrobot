@@ -204,7 +204,7 @@
         // $u_ln = mysqli_real_escape_string($con, $u_ln);
         $u_ln = mysqli_real_escape_string($conn, $u_ln);
         $u_fn = mysqli_real_escape_string($conn, $u_fn);
-        $u_mn = $u_mn ? mysqli_real_escape_string($conn, $u_mn) : null;
+        $u_mn = $u_mn ? mysqli_real_escape_string($conn, $u_mn) : '';
         $username = mysqli_real_escape_string($conn, $username);
         $email    = stripslashes($_REQUEST['email']);
         $email    = mysqli_real_escape_string($conn, $email);
@@ -222,7 +222,7 @@
 
       $hashed_password = password_hash($password, PASSWORD_DEFAULT);
       $query = "INSERT INTO `users` (u_ln, u_fn, u_mn, username, email, password, contact_no, create_datetime, house_no, street_brgy, city_municipality, province, usertype)
-      VALUES ('$u_ln', '$u_fn', " . ($u_mn ? "'$u_mn'" : "NULL") . ", '$username', '$email', '$hashed_password', '$contact_no', '$create_datetime', '$house_no', '$street_brgy', '$city_municipality', '$province', '" . ($is_admin ? 'admin' : 'user') . "')";
+      VALUES ('$u_ln', '$u_fn', '$u_mn', '$username', '$email', '$hashed_password', '$contact_no', '$create_datetime', '$house_no', '$street_brgy', '$city_municipality', '$province', '" . ($is_admin ? 'admin' : 'user') . "')";
 
         $result   = mysqli_query($conn, $query);
 
