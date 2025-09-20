@@ -52,6 +52,26 @@ try {
     $result = mysqli_query($conn, $query);
     $stats['total_users'] = mysqli_fetch_assoc($result)['count'];
     
+    // 5a. Users Born in Botolan
+    $query = "SELECT COUNT(*) as count FROM users WHERE usertype = 'user' AND birthplace_municipality = '037101' AND birthplace_province = '0371'";
+    $result = mysqli_query($conn, $query);
+    $stats['botolan_users'] = mysqli_fetch_assoc($result)['count'];
+    
+    // 5b. Users Born Outside Botolan
+    $query = "SELECT COUNT(*) as count FROM users WHERE usertype = 'user' AND (birthplace_municipality != '037101' OR birthplace_province != '0371' OR birthplace_municipality IS NULL OR birthplace_province IS NULL)";
+    $result = mysqli_query($conn, $query);
+    $stats['non_botolan_users'] = mysqli_fetch_assoc($result)['count'];
+    
+    // 5c. Users with Complete Birthplace Data
+    $query = "SELECT COUNT(*) as count FROM users WHERE usertype = 'user' AND birthplace_municipality IS NOT NULL AND birthplace_province IS NOT NULL AND birthplace_municipality != '' AND birthplace_province != ''";
+    $result = mysqli_query($conn, $query);
+    $stats['users_with_birthplace'] = mysqli_fetch_assoc($result)['count'];
+    
+    // 5d. Users Missing Birthplace Data
+    $query = "SELECT COUNT(*) as count FROM users WHERE usertype = 'user' AND (birthplace_municipality IS NULL OR birthplace_province IS NULL OR birthplace_municipality = '' OR birthplace_province = '')";
+    $result = mysqli_query($conn, $query);
+    $stats['users_missing_birthplace'] = mysqli_fetch_assoc($result)['count'];
+    
     // 6. Today's New Requests
     $query = "SELECT COUNT(*) as count FROM reqtracking_tbl WHERE DATE(registration_date) = '$today'";
     $result = mysqli_query($conn, $query);
@@ -67,7 +87,27 @@ try {
     $result = mysqli_query($conn, $query);
     $stats['admin_users'] = mysqli_fetch_assoc($result)['count'];
     
-    // 9. Average Processing Time (in days)
+    // 9. Users Born in Botolan (LCRO Eligible)
+    $query = "SELECT COUNT(*) as count FROM users WHERE usertype = 'user' AND birthplace_municipality = '037101' AND birthplace_province = '0371'";
+    $result = mysqli_query($conn, $query);
+    $stats['botolan_users'] = mysqli_fetch_assoc($result)['count'];
+    
+    // 10. Users Born Outside Botolan (PSA Only)
+    $query = "SELECT COUNT(*) as count FROM users WHERE usertype = 'user' AND (birthplace_municipality != '037101' OR birthplace_province != '0371' OR birthplace_municipality IS NULL OR birthplace_province IS NULL)";
+    $result = mysqli_query($conn, $query);
+    $stats['non_botolan_users'] = mysqli_fetch_assoc($result)['count'];
+    
+    // 11. Users with Complete Birthplace Data
+    $query = "SELECT COUNT(*) as count FROM users WHERE usertype = 'user' AND birthplace_municipality IS NOT NULL AND birthplace_province IS NOT NULL AND birthplace_municipality != '' AND birthplace_province != ''";
+    $result = mysqli_query($conn, $query);
+    $stats['complete_birthplace_users'] = mysqli_fetch_assoc($result)['count'];
+    
+    // 12. Users with Missing Birthplace Data
+    $query = "SELECT COUNT(*) as count FROM users WHERE usertype = 'user' AND (birthplace_municipality IS NULL OR birthplace_province IS NULL OR birthplace_municipality = '' OR birthplace_province = '')";
+    $result = mysqli_query($conn, $query);
+    $stats['incomplete_birthplace_users'] = mysqli_fetch_assoc($result)['count'];
+    
+    // 13. Average Processing Time (in days)
     $query = "SELECT AVG(DATEDIFF(released_date, registration_date)) as avg_days 
               FROM released_requests 
               WHERE released_date IS NOT NULL AND registration_date IS NOT NULL";
@@ -75,7 +115,7 @@ try {
     $avg_days = mysqli_fetch_assoc($result)['avg_days'];
     $stats['avg_processing_days'] = $avg_days ? round($avg_days, 1) : 0;
     
-    // 10. Requests by Type (this week)
+    // 14. Requests by Type (this week)
     $week_start = date('Y-m-d', strtotime('monday this week'));
     $query = "SELECT type_request, COUNT(*) as count 
               FROM reqtracking_tbl 
@@ -87,7 +127,7 @@ try {
         $stats['requests_by_type'][$row['type_request']] = $row['count'];
     }
     
-    // 11. System Health Indicators
+    // 15. System Health Indicators
     $stats['system_health'] = [
         'database_connected' => $conn ? true : false,
         'last_update' => date('F d, Y h:i:s A'), 

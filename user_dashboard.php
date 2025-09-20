@@ -10,6 +10,38 @@ if(!isset($_SESSION['name'])) {
     header("Location: login.php");
     exit;
 }
+
+// Load database connection
+require_once __DIR__ . '/db.php';
+
+// Get user's document eligibility
+$email = $_SESSION['name']; // This is actually the email address
+$query = "SELECT birthplace_municipality, birthplace_province FROM users WHERE email = ?";
+$stmt = mysqli_prepare($conn, $query);
+mysqli_stmt_bind_param($stmt, "s", $email);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+
+$documentEligibility = null;
+if ($row = mysqli_fetch_assoc($result)) {
+    $birthplaceMunicipality = $row['birthplace_municipality'];
+    $birthplaceProvince = $row['birthplace_province'];
+    
+    // Check if user was born in Botolan, Zambales
+    $isBornInBotolan = ($birthplaceMunicipality === '037101' && $birthplaceProvince === '0371');
+    
+    $documentEligibility = [
+        'isBornInBotolan' => $isBornInBotolan,
+        'canRequestPSA' => true, // Everyone can request PSA documents
+        'canRequestLCRO' => $isBornInBotolan, // Only those born in Botolan can request LCRO documents
+        'message' => $isBornInBotolan ? 
+            'You can request both PSA and LCRO documents since you were born in Botolan, Zambales.' :
+            'You can only request PSA documents. LCRO documents are only available for those born in Botolan, Zambales.'
+    ];
+    
+    // Store in session for quick access
+    $_SESSION['document_eligibility'] = $documentEligibility;
+}
 ?>
 
 
@@ -48,6 +80,26 @@ if(!isset($_SESSION['name'])) {
 
         .custom-ul .dropdown-item li {
     font-size: 16px; /* You can adjust the font size for dropdown menu items */
+        }
+        
+        /* Document type badges styling */
+        .document-type-badges {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .document-type-badges .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .box {
+            position: relative;
+        }
+        
+        .box .document-type-badges {
+            margin-top: 10px;
         }
 
   /* Increase the width of the accordion container */
@@ -129,6 +181,32 @@ if(!isset($_SESSION['name'])) {
         <span>Are you Looking for Civil Documents ?</span>
         <h3>we are here for you!</h3>
         <p>Request your Document now Here at Botolan Municipal Civil Registrar</p>
+        
+        <!-- Document Eligibility Status -->
+        <!-- <?php if ($documentEligibility): ?>
+        <div class="alert <?php echo $documentEligibility['isBornInBotolan'] ? 'alert-success' : 'alert-info'; ?> mt-3" role="alert">
+            <h5><i class="fas fa-info-circle"></i> Document Eligibility Status</h5>
+            <p class="mb-0"><?php echo $documentEligibility['message']; ?></p>
+            <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>PSA Documents:</strong> 
+                    <span class="badge bg-success">Available</span>
+                    <small class="d-block text-muted">Birth, Marriage, Death, CENOMAR</small>
+                </div>
+                <div class="col-md-6">
+                    <strong>LCRO Documents:</strong> 
+                    <?php if ($documentEligibility['canRequestLCRO']): ?>
+                        <span class="badge bg-success">Available</span>
+                        <small class="d-block text-muted">CTC, Varied Forms</small>
+                    <?php else: ?>
+                        <span class="badge bg-warning">Restricted</span>
+                        <small class="d-block text-muted">Only for Botolan residents</small>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?> -->
     </div>
 
        <div class="image">
@@ -192,6 +270,12 @@ if(!isset($_SESSION['name'])) {
     <img src="images/civ.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
     <h3>Birth Certificate</h3>
     <p>Birth certificate is a vital record documenting a person's birth, either as the original document or a certified copy</p>
+    <div class="document-type-badges mb-2">
+        <span class="badge bg-primary">PSA Document</span>
+        <?php if ($documentEligibility && $documentEligibility['canRequestLCRO']): ?>
+            <span class="badge bg-success">LCRO Available</span>
+        <?php endif; ?>
+    </div>
     <a href="birth_form.php?type_request=Birth Certificate" class="btn">Request Now</a>
 </div>
 
@@ -201,6 +285,12 @@ if(!isset($_SESSION['name'])) {
         <img src="images/civ.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
         <h3>Marriage Certificate</h3>
         <p>Marriage certificate is an official document confirming marriage, issued by a government official after civil registration</p>
+        <div class="document-type-badges mb-2">
+            <span class="badge bg-primary">PSA Document</span>
+            <?php if ($documentEligibility && $documentEligibility['canRequestLCRO']): ?>
+                <span class="badge bg-success">LCRO Available</span>
+            <?php endif; ?>
+        </div>
         <a href="marriage_form.php?type_request=Marriage Certificate" class="btn">Request Now</a>
     </div>
 
@@ -209,6 +299,12 @@ if(!isset($_SESSION['name'])) {
         <img src="images/civ.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
         <h3>Death Certificate</h3>
         <p>A death certificate is a legal document from a medical practitioner or a government civil registration office stating the date, location, and cause of a person's death</p>
+        <div class="document-type-badges mb-2">
+            <span class="badge bg-primary">PSA Document</span>
+            <?php if ($documentEligibility && $documentEligibility['canRequestLCRO']): ?>
+                <span class="badge bg-success">LCRO Available</span>
+            <?php endif; ?>
+        </div>
         <a href="death_form.php?type_request=Death Certificate" class="btn">Request Now</a>
     </div>
 
@@ -217,6 +313,12 @@ if(!isset($_SESSION['name'])) {
         <img src="images/civ.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
         <h3>CENOMAR</h3>
         <p>A Certificate of No Marriage Record (CENOMAR) is simply what its name implies. It is a certification issued by the PSA stating that a person has not contracted any marriage</p>
+        <div class="document-type-badges mb-2">
+            <span class="badge bg-primary">PSA Document</span>
+            <?php if ($documentEligibility && $documentEligibility['canRequestLCRO']): ?>
+                <span class="badge bg-success">LCRO Available</span>
+            <?php endif; ?>
+        </div>
         <a href="ceno_form.php?type_request=CENOMAR" class="btn">Request Now</a>
     </div>
 

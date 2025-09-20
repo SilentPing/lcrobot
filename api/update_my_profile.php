@@ -11,9 +11,9 @@ require_once __DIR__ . '/../db.php';
 header('Content-Type: application/json');
 
 // Check if user is logged in
-if (!isset($_SESSION['id_user'])) {
+if (!isset($_SESSION['id_user']) || !isset($_SESSION['name'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Not logged in']);
+    echo json_encode(['success' => false, 'message' => 'Not logged in - please log in again']);
     exit;
 }
 
@@ -40,8 +40,11 @@ try {
     $action = $input['action'];
     
     // Security check: Users can only update their own profile
-    if ($user_id !== $_SESSION['id_user']) {
-        throw new Exception('Unauthorized: You can only update your own profile');
+    $session_user_id = intval($_SESSION['id_user']);
+    $post_user_id = intval($user_id);
+    
+    if ($post_user_id !== $session_user_id) {
+        throw new Exception('Unauthorized: You can only update your own profile. Sent: ' . $post_user_id . ', Session: ' . $session_user_id);
     }
     
     if (!$user_id) {

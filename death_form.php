@@ -52,6 +52,35 @@ if (isset($_SESSION['user_data'])) {
 // Load database connection and encryption functions
 require_once __DIR__ . '/db.php';
 
+// Get user's document eligibility
+$document_eligibility = 'PSA Only'; // Default
+$birthplace_municipality = '';
+$birthplace_province = '';
+
+// Get user's birthplace information to determine document eligibility
+$user_email = $_SESSION['name'];
+$user_query = "SELECT birthplace_municipality, birthplace_province FROM users WHERE email = ?";
+$user_stmt = $conn->prepare($user_query);
+$user_stmt->bind_param("s", $user_email);
+$user_stmt->execute();
+$user_result = $user_stmt->get_result();
+
+if ($user_result->num_rows > 0) {
+    $user_data = $user_result->fetch_assoc();
+    $birthplace_municipality = $user_data['birthplace_municipality'] ?? '';
+    $birthplace_province = $user_data['birthplace_province'] ?? '';
+    
+    // Check if user is eligible for LCRO documents (born in Botolan)
+    if ($birthplace_municipality === '037101' && $birthplace_province === '0371') {
+        $document_eligibility = 'LCRO + PSA';
+    } else if (!empty($birthplace_municipality) && !empty($birthplace_province)) {
+        $document_eligibility = 'PSA Only';
+    } else {
+        $document_eligibility = 'Incomplete Profile';
+    }
+}
+$user_stmt->close();
+
 // Check if the form has been submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve data from the form
@@ -65,6 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $place_of_death = $_POST["place_of_death"];
     $purpose_of_request = $_POST["purpose_of_request"];
     $type_request = $_POST["type_request"];
+    $document_type = $_POST["document_type"];
     $status_request = 'PENDING';
     $id_user = $_POST['id_user'];
     // Add other fields here
@@ -80,16 +110,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $registrar_name = "$deceased_ln $deceased_fn $deceased_mn"; // Replace with the actual registrar's name
 
     // SQL query to insert data into the death_tbl table with encrypted fields
-    $stmt = $conn->prepare("INSERT INTO death_tbl (id_user, deceased_ln, deceased_fn, deceased_mn, deceased_ln_enc, deceased_ln_tok, deceased_fn_enc, deceased_fn_tok, deceased_mn_enc, deceased_mn_tok, dob_enc, dob_tok, dob, dod, place_of_death, purpose_of_request, type_request, status_request) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO death_tbl (id_user, deceased_ln, deceased_fn, deceased_mn, deceased_ln_enc, deceased_ln_tok, deceased_fn_enc, deceased_fn_tok, deceased_mn_enc, deceased_mn_tok, dob_enc, dob_tok, dob, dod, place_of_death, purpose_of_request, type_request, document_type, status_request) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     
-    $stmt->bind_param("isssssssssssssssss", 
+    $stmt->bind_param("issssssssssssssssss", 
         $id_user, 
         $deceased_ln, $deceased_fn, $deceased_mn, // Keep original for backward compatibility
         $deceased_ln_data['encrypted'], $deceased_ln_data['token'],
         $deceased_fn_data['encrypted'], $deceased_fn_data['token'],
         $deceased_mn_data['encrypted'], $deceased_mn_data['token'],
         $dob_data['encrypted'], $dob_data['token'],
-        $dob, $dod, $place_of_death, $purpose_of_request, $type_request, $status_request);
+        $dob, $dod, $place_of_death, $purpose_of_request, $type_request, $document_type, $status_request);
     
         if ($stmt->execute()) {
         // Insert data into civ_record table
@@ -356,6 +386,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 </select>
                             </div>
 
+                            <div class="input-field">
+                                <label for="document_type">Document Type</label>
+                                <select name="document_type" id="document_type" class="form-control" required>
+                                    <option value="PSA" selected>PSA Document</option>
+                                    <option value="LCRO" <?php echo ($document_eligibility === 'LCRO + PSA') ? '' : 'disabled'; ?>>LCRO Document (Botolan Residents Only)</option>
+                                </select>
+                                <small class="form-text text-muted">
+                                    <?php if ($document_eligibility === 'LCRO + PSA'): ?>
+                                        <span class="text-success">✓ You are eligible for both PSA and LCRO documents</span>
+                                    <?php elseif ($document_eligibility === 'PSA Only'): ?>
+                                        <span class="text-info">ℹ You can only request PSA documents</span>
+                                    <?php else: ?>
+                                        <span class="text-warning">⚠ Please complete your profile to see document options</span>
+                                    <?php endif; ?>
+                                </small>
+                            </div>
+
                         <div class="input-field">
                             <label>Type of Request</label>
                             <input type="text" id="type_request" name="type_request" value="<?php echo $typeRequest; ?>" required readonly>
@@ -434,6 +481,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     document.querySelector('.submitBtn').addEventListener('click', function(event) {
         event.preventDefault(); // Prevent default form submission
         showConfirmationModal(); // Show SweetAlert confirmation modal
+    });
+
+    // Document eligibility check
+    document.addEventListener('DOMContentLoaded', function() {
+        const documentTypeSelect = document.getElementById('document_type');
+        const lcroOption = documentTypeSelect.querySelector('option[value="LCRO"]');
+        
+        // Check if LCRO option is disabled
+        if (lcroOption && lcroOption.disabled) {
+            // Add visual indication that LCRO is not available
+            lcroOption.style.color = '#999';
+            lcroOption.style.backgroundColor = '#f5f5f5';
+        }
+        
+        // Add change event listener to document type
+        documentTypeSelect.addEventListener('change', function() {
+            const selectedValue = this.value;
+            const lcroOption = this.querySelector('option[value="LCRO"]');
+            
+            if (selectedValue === 'LCRO' && lcroOption && lcroOption.disabled) {
+                // Show warning if user tries to select disabled LCRO
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'LCRO Not Available',
+                    text: 'You are not eligible for LCRO documents. Only PSA documents are available for your location.',
+                    confirmButtonText: 'OK'
+                });
+                // Reset to PSA
+                this.value = 'PSA';
+            }
+        });
     });
 </script>
 

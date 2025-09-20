@@ -279,7 +279,7 @@ $barangayName = getBarangayName($user['street_brgy']);
                                 
                                 <div class="info-item">
                                     <div class="info-label">
-                                        <i class="fas fa-map-marker-alt me-2 text-primary"></i>Address
+                                        <i class="fas fa-map-marker-alt me-2 text-primary"></i>Current Address
                                     </div>
                                     <div class="info-value">
                                         <?php 
@@ -287,6 +287,30 @@ $barangayName = getBarangayName($user['street_brgy']);
                                              htmlspecialchars($barangayName) . ', ' . 
                                              htmlspecialchars($cityMunicipalityName) . ', ' . 
                                              htmlspecialchars($provinceName); 
+                                        ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-label">
+                                        <i class="fas fa-birthday-cake me-2 text-primary"></i>Birthplace
+                                    </div>
+                                    <div class="info-value">
+                                        <?php 
+                                        if (!empty($user['birthplace_municipality']) && !empty($user['birthplace_province'])) {
+                                            $birthplaceMunicipalityName = getCityMunicipalityName($user['birthplace_municipality']);
+                                            $birthplaceProvinceName = getProvinceName($user['birthplace_province']);
+                                            echo htmlspecialchars($birthplaceMunicipalityName) . ', ' . htmlspecialchars($birthplaceProvinceName);
+                                            
+                                            // Show document eligibility
+                                            if ($user['birthplace_municipality'] === '037101' && $user['birthplace_province'] === '0371') {
+                                                echo ' <span class="badge bg-success ms-2">LCRO + PSA Eligible</span>';
+                                            } else {
+                                                echo ' <span class="badge bg-info ms-2">PSA Only</span>';
+                                            }
+                                        } else {
+                                            echo '<span class="text-muted">Not specified</span> <span class="badge bg-warning ms-2">Incomplete Profile</span>';
+                                        }
                                         ?>
                                     </div>
                                 </div>
@@ -310,9 +334,7 @@ $barangayName = getBarangayName($user['street_brgy']);
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit My Profile</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="editProfileContent">
                     <!-- Content will be loaded here -->

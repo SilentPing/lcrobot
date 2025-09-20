@@ -47,6 +47,17 @@ if (isset($_POST['login'])) {
     $username = mysqli_real_escape_string($conn, $username);
     $password = stripslashes($_REQUEST['password']);
     $password = mysqli_real_escape_string($conn, $password);
+    
+    // Validate input
+    if (empty($username) || empty($password)) {
+        echo "<script>
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Information',
+                    text: 'Please enter both email and password.',
+                });
+              </script>";
+    } else {
 
     $query = "SELECT * FROM `users` WHERE username='$username' OR email='$username'";
     $result = mysqli_query($conn, $query) or die(mysqli_error($conn));
@@ -120,25 +131,26 @@ if (isset($_POST['login'])) {
 
             exit();
         } else {
-            // Password verification failed
+            // Password verification failed - user exists but wrong password
             echo "<script>
                     Swal.fire({
                         icon: 'error',
-                        title: 'Oops...',
-                        text: 'Incorrect email or password.',
+                        title: 'Wrong Password',
+                        text: 'The password you entered is incorrect. Please try again.',
                     });
                   </script>";
         }
     } else {
-        // User not found
+        // User not found - wrong email/username
         echo "<script>
                 Swal.fire({
                     icon: 'error',
-                    title: 'Oops...',
-                    text: 'Incorrect email or password.',
+                    title: 'Wrong Email',
+                    text: 'The email address you entered is not registered. Please check and try again.',
                 });
               </script>";
     }
+    } // Close the else block for input validation
 }
 
 ?>
@@ -151,7 +163,7 @@ if (isset($_POST['login'])) {
           <img src="images/lcrobot.png" class="img-fluid" alt="Phone image" height="100px" width="500px">
         </div>
         <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
-          <form action="" method="post">
+          <form action="" method="post" id="loginForm">
             <p class="text-center h1 fw-bold mb-4 mx-1 mx-md-1 mt-3">A Web Based Civil Registry <br>Portal for Botolan</p>
             
               <!-- Email input -->
@@ -210,6 +222,38 @@ if (isset($_POST['login'])) {
     if (window.history.replaceState) {
         window.history.replaceState(null, null, window.location.href);
     }
+
+    // Client-side form validation
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const username = document.getElementById('floatingInput').value.trim();
+        const password = document.getElementById('floatingPassword').value.trim();
+        
+        if (!username || !password) {
+            e.preventDefault(); // Prevent form submission
+            
+            Swal.fire({
+                icon: 'warning',
+                title: 'Missing Information',
+                text: 'Please enter both email and password.',
+            });
+            
+            return false;
+        }
+        
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(username)) {
+            e.preventDefault(); // Prevent form submission
+            
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Email Format',
+                text: 'Please enter a valid email address.',
+            });
+            
+            return false;
+        }
+    });
   </script>
 
 <?php

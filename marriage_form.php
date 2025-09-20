@@ -52,6 +52,35 @@ if (isset($_SESSION['user_data'])) {
 // Load database connection and encryption functions
 require_once __DIR__ . '/db.php';
 
+// Get user's document eligibility
+$document_eligibility = 'PSA Only'; // Default
+$birthplace_municipality = '';
+$birthplace_province = '';
+
+// Get user's birthplace information to determine document eligibility
+$user_email = $_SESSION['name'];
+$user_query = "SELECT birthplace_municipality, birthplace_province FROM users WHERE email = ?";
+$user_stmt = $conn->prepare($user_query);
+$user_stmt->bind_param("s", $user_email);
+$user_stmt->execute();
+$user_result = $user_stmt->get_result();
+
+if ($user_result->num_rows > 0) {
+    $user_data = $user_result->fetch_assoc();
+    $birthplace_municipality = $user_data['birthplace_municipality'] ?? '';
+    $birthplace_province = $user_data['birthplace_province'] ?? '';
+    
+    // Check if user is eligible for LCRO documents (born in Botolan)
+    if ($birthplace_municipality === '037101' && $birthplace_province === '0371') {
+        $document_eligibility = 'LCRO + PSA';
+    } else if (!empty($birthplace_municipality) && !empty($birthplace_province)) {
+        $document_eligibility = 'PSA Only';
+    } else {
+        $document_eligibility = 'Incomplete Profile';
+    }
+}
+$user_stmt->close();
+
 // Check if the form has been submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve data from the form
@@ -67,6 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $place_of_marriage = $_POST["place_of_marriage"];
     $purpose_of_request = $_POST["purpose_of_request"];
     $type_request = $_POST["type_request"];
+    $document_type = $_POST["document_type"];
     $status_request = 'PENDING';
     $id_user = $_POST['id_user']; // Retrieve id_user from the form data
     // Add other fields here
@@ -84,9 +114,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $registrar_name = "$maiden_wife_ln $maiden_wife_mn $maiden_wife_fn"; // Replace with the actual registrar's name
 
     // SQL query to insert data into the marriage_tbl table with encrypted fields
-    $stmt = $conn->prepare("INSERT INTO marriage_tbl (id_user, husband_ln, husband_fn, husband_mn, maiden_wife_ln, maiden_wife_fn, maiden_wife_mn, husband_ln_enc, husband_ln_tok, husband_fn_enc, husband_fn_tok, husband_mn_enc, husband_mn_tok, maiden_wife_ln_enc, maiden_wife_ln_tok, maiden_wife_fn_enc, maiden_wife_fn_tok, maiden_wife_mn_enc, maiden_wife_mn_tok, marriage_date, place_of_marriage, purpose_of_request, type_request, status_request) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO marriage_tbl (id_user, husband_ln, husband_fn, husband_mn, maiden_wife_ln, maiden_wife_fn, maiden_wife_mn, husband_ln_enc, husband_ln_tok, husband_fn_enc, husband_fn_tok, husband_mn_enc, husband_mn_tok, maiden_wife_ln_enc, maiden_wife_ln_tok, maiden_wife_fn_enc, maiden_wife_fn_tok, maiden_wife_mn_enc, maiden_wife_mn_tok, marriage_date, place_of_marriage, purpose_of_request, type_request, document_type, status_request) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-    $stmt->bind_param("isssssssssssssssssssssss", 
+    $stmt->bind_param("issssssssssssssssssssssss", 
         $id_user, 
         $husband_ln, $husband_fn, $husband_mn, $maiden_wife_ln, $maiden_wife_fn, $maiden_wife_mn, // Keep original for backward compatibility
         $husband_ln_data['encrypted'], $husband_ln_data['token'],
@@ -95,7 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $wife_ln_data['encrypted'], $wife_ln_data['token'],
         $wife_fn_data['encrypted'], $wife_fn_data['token'],
         $wife_mn_data['encrypted'], $wife_mn_data['token'],
-        $marriage_date, $place_of_marriage, $purpose_of_request, $type_request, $status_request);
+        $marriage_date, $place_of_marriage, $purpose_of_request, $type_request, $document_type, $status_request);
 
     if ($stmt->execute()) {
         // Insert data into civ_record table
@@ -362,6 +392,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 </select>
                             </div>
 
+                            <div class="input-field">
+                                <label for="document_type">Document Type</label>
+                                <select name="document_type" id="document_type" class="form-control" required>
+                                    <option value="PSA" selected>PSA Document</option>
+                                    <option value="LCRO" <?php echo ($document_eligibility === 'LCRO + PSA') ? '' : 'disabled'; ?>>LCRO Document (Botolan Residents Only)</option>
+                                </select>
+                                <small class="form-text text-muted">
+                                    <?php if ($document_eligibility === 'LCRO + PSA'): ?>
+                                        <span class="text-success">✓ You are eligible for both PSA and LCRO documents</span>
+                                    <?php elseif ($document_eligibility === 'PSA Only'): ?>
+                                        <span class="text-info">ℹ You can only request PSA documents</span>
+                                    <?php else: ?>
+                                        <span class="text-warning">⚠ Please complete your profile to see document options</span>
+                                    <?php endif; ?>
+                                </small>
+                            </div>
+
                         <div class="input-field">
                             <label>Type of Request</label>
                             <input type="text" id="type_request" name="type_request" value="<?php echo $typeRequest; ?>" required readonly>
@@ -439,6 +486,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     document.querySelector('.submitBtn').addEventListener('click', function(event) {
         event.preventDefault(); // Prevent default form submission
         showConfirmationModal(); // Show SweetAlert confirmation modal
+    });
+
+    // Document eligibility check
+    document.addEventListener('DOMContentLoaded', function() {
+        const documentTypeSelect = document.getElementById('document_type');
+        const lcroOption = documentTypeSelect.querySelector('option[value="LCRO"]');
+        
+        // Check if LCRO option is disabled
+        if (lcroOption && lcroOption.disabled) {
+            // Add visual indication that LCRO is not available
+            lcroOption.style.color = '#999';
+            lcroOption.style.backgroundColor = '#f5f5f5';
+        }
+        
+        // Add change event listener to document type
+        documentTypeSelect.addEventListener('change', function() {
+            const selectedValue = this.value;
+            const lcroOption = this.querySelector('option[value="LCRO"]');
+            
+            if (selectedValue === 'LCRO' && lcroOption && lcroOption.disabled) {
+                // Show warning if user tries to select disabled LCRO
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'LCRO Not Available',
+                    text: 'You are not eligible for LCRO documents. Only PSA documents are available for your location.',
+                    confirmButtonText: 'OK'
+                });
+                // Reset to PSA
+                this.value = 'PSA';
+            }
+        });
     });
 </script>
 

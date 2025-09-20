@@ -164,6 +164,9 @@
     session_start();
 
  require_once __DIR__ . '/db.php';
+    
+ date_default_timezone_set('Asia/Manila');
+    
     // When form submitted, insert values into the database.
     if (isset($_REQUEST['username'])) {
 
@@ -181,11 +184,15 @@
         $password = $_POST['password'];
         $confirm_password = $_POST['confirm_password'];
         $contact_no = $_POST['contact_no'];
-        $create_datetime = date("Y-m-d H:i:s");
+        $create_datetime = date("F d, Y h:ia");
         $house_no = $_POST['house_no'];
         $street_brgy = $_POST['street_brgy'];
         $city_municipality = $_POST['city_municipality'];
         $province = $_POST['province'];
+        $birthplace_municipality = $_POST['birthplace_municipality'];
+        $birthplace_province = $_POST['birthplace_province'];
+        
+        
 
 
         $_SESSION['user_data'] = [
@@ -197,6 +204,12 @@
       'contact_no' => $contact_no,
       'house_no' => $house_no,
       'street_brgy' => $street_brgy,
+      'city_municipality' => $city_municipality,
+      'province' => $province,
+      'birthplace_municipality' => $birthplace_municipality,
+      'birthplace_province' => $birthplace_province,
+      'residence_municipality' => $city_municipality,
+      'residence_province' => $province,
 ];
 
        
@@ -211,55 +224,68 @@
         $password = stripslashes($_REQUEST['password']);
         $password = mysqli_real_escape_string($conn, $password);
         $contact_no = mysqli_real_escape_string($conn, $contact_no);
-        $create_datetime = date("Y-m-d H:i:s");
+        $create_datetime = date("F d, Y h:ia");
         $house_no = mysqli_real_escape_string($conn, $house_no);
         $street_brgy = mysqli_real_escape_string($conn, $street_brgy);
         $city_municipality = mysqli_real_escape_string($conn, $city_municipality);
         $province = mysqli_real_escape_string($conn, $province);
+        $birthplace_municipality = mysqli_real_escape_string($conn, $birthplace_municipality);
+        $birthplace_province = mysqli_real_escape_string($conn, $birthplace_province);
         // $usertype    = stripslashes($_REQUEST['usertype']);
         // Assuming you have a way to determine if the user is an admin, e.g., through an additional form field or some other method.
       $is_admin = false; // Change this to determine if the user is an admin or not.
 
       $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-      $query = "INSERT INTO `users` (u_ln, u_fn, u_mn, username, email, password, contact_no, create_datetime, house_no, street_brgy, city_municipality, province, usertype)
-      VALUES ('$u_ln', '$u_fn', '$u_mn', '$username', '$email', '$hashed_password', '$contact_no', '$create_datetime', '$house_no', '$street_brgy', '$city_municipality', '$province', '" . ($is_admin ? 'admin' : 'user') . "')";
+      $query = "INSERT INTO `users` (u_ln, u_fn, u_mn, username, email, password, contact_no, create_datetime, house_no, street_brgy, city_municipality, province, birthplace_municipality, birthplace_province, residence_municipality, residence_province, usertype)
+      VALUES ('$u_ln', '$u_fn', '$u_mn', '$username', '$email', '$hashed_password', '$contact_no', '$create_datetime', '$house_no', '$street_brgy', '$city_municipality', '$province', '$birthplace_municipality', '$birthplace_province', '$city_municipality', '$province', '" . ($is_admin ? 'admin' : 'user') . "')";
 
+        // Debug: Log the values being inserted
+        error_log("INSERT VALUES - Birthplace Province: " . $birthplace_province);
+        error_log("INSERT VALUES - Birthplace Municipality: " . $birthplace_municipality);
+        error_log("INSERT VALUES - Residence Municipality: " . $city_municipality);
+        error_log("INSERT VALUES - Residence Province: " . $province);
+        
         $result   = mysqli_query($conn, $query);
 
         if ($result) {
-
-               echo '<script>
-                        Swal.fire({
-                          title: "Good job!",
-                          text: "You are registered successfully",
-                          icon: "success",
-                          showConfirmButton: false,
-                          timer: 3000,
-                          timerProgressBar: true,
-                          didOpen: (toast) => {
-                            toast.addEventListener("mouseenter", Swal.stopTimer);
-                            toast.addEventListener("mouseleave", Swal.resumeTimer);
-                          },
-                        });
-
-                        setTimeout(function () {
-                          window.location.href = "login.php"; // Redirect to login page after 3 seconds
-                        }, 3000);
-                    </script>';
-
-
-                  mysqli_close($conn);
-                  exit;
+            error_log("INSERT SUCCESS - User registered with birthplace data");
+          echo '<script>
+                  Swal.fire({
+                    title: "Good job!",
+                    text: "You are registered successfully",
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                      toast.addEventListener("mouseenter", Swal.stopTimer);
+                      toast.addEventListener("mouseleave", Swal.resumeTimer);
+                    },
+                  });
+  
+                  setTimeout(function () {
+                    window.location.href = "login.php"; // Redirect to login page after 3 seconds
+                  }, 3000);
+                </script>';
+          exit;
         } else {
-            echo "<div class='form'>
-                  <h3>Required fields are missing.</h3><br/>
-                  <p class='link'>Click here to <a href='registration.php'>registration</a> again.</p>
-                  </div>";
-
-                  mysqli_close($con);
-                  exit;
-        }
-    } else {
+            $error_message = mysqli_error($conn);
+            error_log("INSERT FAILED: " . $error_message);
+            echo '<script>
+                  Swal.fire({
+                      title: "Registration Failed",
+                      text: "There was an error creating your account. Please try again.",
+                      icon: "error",
+                      confirmButtonText: "Try Again"
+                  }).then((result) => {
+                      if (result.isConfirmed) {
+                          window.location.href = "registration.php";
+                      }
+                  });
+                </script>';
+          exit;
+      }
+  } else {
 ?>
 
 
@@ -347,16 +373,21 @@
                   </div>
                 </div>
 
-                <!-- Address Information Row -->
+                <!-- Current Address Information Row -->
                 <div class="row">
+                  <div class="col-12">
+                    <h5 class="text-primary mb-3"><i class="bi bi-house-door"></i> Current Address (Where you live now)</h5>
+                  </div>
                   <div class="col-12 col-md-4">
                     <div class="form-outline">
                       <label class="form-label" for="province">Province</label>
                       <select id="province" class="form-select form-select-lg" name="province" required>
                         <option value="">Select Province</option>
                         <?php 
-
-                          require_once __DIR__ . '/db.php';
+                          // Use the existing connection from the top of the file
+                          if (!isset($conn)) {
+                            require_once __DIR__ . '/db.php';
+                          }
 
                           // Check the connection
                           if ($conn->connect_error) {
@@ -372,9 +403,6 @@
                               echo "<option value='" . $row['provCode'] . "'>" . $row['provDesc'] . "</option>";
                             }
                           }
-
-                          // Close the database connection
-                          $conn->close();
                         ?>
                       </select>
                     </div>
@@ -395,6 +423,60 @@
                         <option value="">Select Barangay</option>
                         <!-- Add your barangay options here -->
                       </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Birthplace Information Row -->
+                <div class="row mt-4">
+                  <div class="col-12">
+                    <h5 class="text-success mb-3"><i class="bi bi-geo-alt"></i> Birthplace Information (Where you were born)</h5>
+                    <p class="text-muted small mb-3">This information is required to determine which civil registry documents you can request.</p>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="form-outline">
+                      <label class="form-label" for="birthplace_province">Birthplace Province</label>
+                      <select id="birthplace_province" class="form-select form-select-lg" name="birthplace_province" required>
+                        <option value="">Select Birthplace Province</option>
+                        <?php 
+                          // Use the existing connection from the top of the file
+                          if (!isset($conn)) {
+                            require_once __DIR__ . '/db.php';
+                          }
+                          
+                          if ($conn->connect_error) {
+                            die("Connection failed: " . $conn->connect_error);
+                          }
+                          $sql = "SELECT provDesc, provCode FROM refprovince ORDER BY provDesc";
+                          $result = $conn->query($sql);
+                          if ($result->num_rows > 0) {
+                            while ($row = $result->fetch_assoc()) {
+                              echo "<option value='" . $row['provCode'] . "'>" . $row['provDesc'] . "</option>";
+                            }
+                          }
+                        ?>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="form-outline">
+                      <label class="form-label" for="birthplace_city">Birthplace City/Municipality</label>
+                      <select id="birthplace_city" class="form-select form-select-lg" name="birthplace_municipality" required>
+                        <option value="">Select Birthplace City/Municipality</option>
+                        <!-- Birthplace city options will be populated dynamically -->
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Document Type Information -->
+                <div class="row mt-4">
+                  <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                      <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Document Request Policy</h6>
+                      <hr>
+                      <p class="mb-2"><strong>PSA Documents</strong> (Birth, Marriage, Death, CENOMAR): Available to all users regardless of birthplace.</p>
+                      <p class="mb-0"><strong>LCRO Documents</strong> (CTC, Varied Forms): Only available if you were born in Botolan, Zambales or currently live in Botolan, Zambales.</p>
                     </div>
                   </div>
                 </div>
@@ -441,6 +523,7 @@
 $(document).ready(function() {
     var formSubmitted = false; // Track whether the form has been submitted
     
+    // Email validation
     $('#email').on('input', function() {
         $('#emailWarning').html(''); // Clear the existing error message
         
@@ -478,77 +561,145 @@ $(document).ready(function() {
             $('#registerButton').prop('disabled', false);
         }
     });
-});
 
+    // Define a function to fetch and populate the City/Municipality dropdown
+    function findCities(selectedProvinceCode) {
+        $.ajax({
+            type: 'POST',
+            url: 'get_cities.php',
+            data: { province_code: selectedProvinceCode },
+            success: function (data) {
+                var cityDropdown = document.getElementById('city');
+                cityDropdown.innerHTML = '<option value="">Select City/Municipality</option>';
+                var cities = JSON.parse(data);
 
-// Define a function to fetch and populate the City/Municipality dropdown
-function findCities(selectedProvinceCode) {
-    $.ajax({
-        type: 'POST',
-        url: 'get_cities.php',
-        data: { province_code: selectedProvinceCode },
-        success: function (data) {
-            var cityDropdown = document.getElementById('city');
-            cityDropdown.innerHTML = '<option value="">Select City/Municipality</option>';
-            var cities = JSON.parse(data);
-
-            if (cities.length > 0) {
-                cities.forEach(function (city) {
-                    var option = document.createElement('option');
-                    option.value = city.code;
-                    option.textContent = city.name;
-                    cityDropdown.appendChild(option);
-                });
+                if (cities.length > 0) {
+                    cities.forEach(function (city) {
+                        var option = document.createElement('option');
+                        option.value = city.code;
+                        option.textContent = city.name;
+                        cityDropdown.appendChild(option);
+                    });
+                }
             }
+        });
+    }
+
+    // Add an event listener to the Province dropdown to call the function when it changes
+    $('#province').on('change', function () {
+        var selectedProvinceCode = this.value;
+        if (selectedProvinceCode !== '') {
+            findCities(selectedProvinceCode);
+        } else {
+            // Clear the City/Municipality dropdown if no Province is selected
+            $('#city').html('<option value="">Select City/Municipality</option>');
+            $('#barangay').html('<option value="">Select Barangay</option>');
         }
     });
-}
 
-// Add an event listener to the Province dropdown to call the function when it changes
-document.getElementById('province').addEventListener('change', function () {
-    var selectedProvinceCode = this.value;
-    if (selectedProvinceCode !== '') {
-        findCities(selectedProvinceCode);
-    } else {
-        // Clear the City/Municipality dropdown if no Province is selected
-        document.getElementById('city').innerHTML = '<option value="">Select City/Municipality</option>';
-        document.getElementById('barangay').innerHTML = '<option value="">Select Barangay</option>';
-    }
-});
+    // Define a function to fetch and populate the Barangay dropdown
+    function findBarangays(selectedCityCode) {
+        $.ajax({
+            type: 'POST',
+            url: 'get_barangay.php',
+            data: { city_code: selectedCityCode },
+            success: function (data) {
+                var barangayDropdown = document.getElementById('barangay');
+                barangayDropdown.innerHTML = '<option value="">Select Barangay</option>';
+                var barangays = JSON.parse(data);
 
-// Define a function to fetch and populate the Barangay dropdown
-function findBarangays(selectedCityCode) {
-    $.ajax({
-        type: 'POST',
-        url: 'get_barangay.php',
-        data: { city_code: selectedCityCode }, // Use 'city_code' here
-        success: function (data) {
-            var barangayDropdown = document.getElementById('barangay');
-            barangayDropdown.innerHTML = '<option value="">Select Barangay</option>';
-            var barangays = JSON.parse(data);
-
-            if (barangays.length > 0) {
-                barangays.forEach(function (barangay) {
-                    var option = document.createElement('option');
-                    option.value = barangay; // Use 'barangay' directly
-                    option.textContent = barangay; // Use 'barangay' directly
-                    barangayDropdown.appendChild(option);
-                });
+                if (barangays.length > 0) {
+                    barangays.forEach(function (barangay) {
+                        var option = document.createElement('option');
+                        option.value = barangay;
+                        option.textContent = barangay;
+                        barangayDropdown.appendChild(option);
+                    });
+                }
             }
+        });
+    }
+
+    // Add an event listener to the City/Municipality dropdown to call the function when it changes
+    $('#city').on('change', function () {
+        var selectedCityCode = this.value;
+        if (selectedCityCode !== '') {
+            findBarangays(selectedCityCode);
+        } else {
+            // Clear the Barangay dropdown if no City/Municipality is selected
+            $('#barangay').html('<option value="">Select Barangay</option>');
         }
     });
-}
 
-// Add an event listener to the City/Municipality dropdown to call the function when it changes
-document.getElementById('city').addEventListener('change', function () {
-    var selectedCityCode = this.value;
-    if (selectedCityCode !== '') {
-        findBarangays(selectedCityCode);
-    } else {
-        // Clear the Barangay dropdown if no City/Municipality is selected
-        document.getElementById('barangay').innerHTML = '<option value="">Select Barangay</option>';
+    // Define a function to fetch and populate the Birthplace City/Municipality dropdown
+    function findBirthplaceCities(selectedProvinceCode) {
+        $.ajax({
+            type: 'POST',
+            url: 'get_cities.php',
+            data: { province_code: selectedProvinceCode },
+            success: function (data) {
+                var birthplaceCityDropdown = document.getElementById('birthplace_city');
+                birthplaceCityDropdown.innerHTML = '<option value="">Select Birthplace City/Municipality</option>';
+                var cities = JSON.parse(data);
+
+                if (cities.length > 0) {
+                    cities.forEach(function (city) {
+                        var option = document.createElement('option');
+                        option.value = city.code;
+                        option.textContent = city.name;
+                        birthplaceCityDropdown.appendChild(option);
+                    });
+                }
+                
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading birthplace cities:', error);
+            }
+        });
     }
+
+    // Add an event listener to the Birthplace Province dropdown to call the function when it changes
+    $('#birthplace_province').on('change', function () {
+        var selectedProvinceCode = this.value;
+        if (selectedProvinceCode !== '') {
+            findBirthplaceCities(selectedProvinceCode);
+        } else {
+            // Clear the Birthplace City/Municipality dropdown if no Province is selected
+            $('#birthplace_city').html('<option value="">Select Birthplace City/Municipality</option>');
+        }
+    });
+
+    // Form validation before submission
+    $('#registration-form').on('submit', function(e) {
+        var birthplaceProvince = $('#birthplace_province').val();
+        var birthplaceCity = $('select[name="birthplace_municipality"]').val();
+        
+        
+        if (!birthplaceProvince || !birthplaceCity) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Missing Birthplace Information',
+                text: 'Please select both your birthplace province and city/municipality.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+        
+        // Show loading state
+        Swal.fire({
+            title: 'Registering...',
+            text: 'Please wait while we create your account.',
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    });
 });
+
 
 
 
@@ -676,6 +827,11 @@ document.getElementById('password').addEventListener('input', function() {
 </script>
 <?php
     } 
+    
+    // Close database connection at the end
+    if (isset($conn)) {
+        mysqli_close($conn);
+    }
 ?>
 
 

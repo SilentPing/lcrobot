@@ -10,10 +10,10 @@ require_once __DIR__ . '/../db.php';
 // Set JSON header
 header('Content-Type: application/json');
 
-// Check if user is logged in as admin
-if (!isset($_SESSION['id_user']) || $_SESSION['usertype'] !== 'admin') {
+// Check if user is logged in
+if (!isset($_SESSION['id_user']) || !isset($_SESSION['name'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
+    echo json_encode(['success' => false, 'message' => 'Not logged in - please log in again']);
     exit;
 }
 
@@ -24,14 +24,50 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    
     $user_id = intval($_POST['user_id']);
+    $session_user_id = $_SESSION['id_user'] ?? 'not_set';
+    
+    // Debug information
+    error_log("Upload Debug - POST user_id: " . $user_id);
+    error_log("Upload Debug - SESSION id_user: " . $session_user_id);
+    error_log("Upload Debug - SESSION name: " . ($_SESSION['name'] ?? 'not_set'));
     
     if (!$user_id) {
         throw new Exception('Invalid user ID');
     }
     
-    if (!isset($_FILES['profile_picture']) || $_FILES['profile_picture']['error'] !== UPLOAD_ERR_OK) {
-        throw new Exception('No file uploaded or upload error');
+    // Security check: Users can only upload profile pictures for themselves
+    if (!isset($_SESSION['id_user'])) {
+        throw new Exception('Not logged in - please log in again');
+    }
+    
+    // Convert both to integers for comparison
+    $session_user_id = intval($_SESSION['id_user']);
+    $post_user_id = intval($user_id);
+    
+    if ($post_user_id !== $session_user_id) {
+        throw new Exception('Unauthorized: You can only upload profile pictures for your own account. Sent: ' . $post_user_id . ', Session: ' . $session_user_id);
+    }
+    
+    if (!isset($_FILES['profile_picture'])) {
+        throw new Exception('No file uploaded');
+    }
+    
+    if ($_FILES['profile_picture']['error'] !== UPLOAD_ERR_OK) {
+        $error_messages = [
+            UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize',
+            UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE',
+            UPLOAD_ERR_PARTIAL => 'File was only partially uploaded',
+            UPLOAD_ERR_NO_FILE => 'No file was uploaded',
+            UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder',
+            UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+            UPLOAD_ERR_EXTENSION => 'File upload stopped by extension'
+        ];
+        $error_msg = isset($error_messages[$_FILES['profile_picture']['error']]) 
+            ? $error_messages[$_FILES['profile_picture']['error']] 
+            : 'Unknown upload error';
+        throw new Exception('Upload error: ' . $error_msg);
     }
     
     $file = $_FILES['profile_picture'];
@@ -88,12 +124,21 @@ function validateProfilePicture($file) {
         throw new Exception('File size exceeds 20MB limit');
     }
     
+    // Check if file exists
+    if (!file_exists($file['tmp_name'])) {
+        throw new Exception('Temporary file not found');
+    }
+    
     // Check file type
     $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     $file_type = mime_content_type($file['tmp_name']);
     
+    if (!$file_type) {
+        throw new Exception('Could not determine file type');
+    }
+    
     if (!in_array($file_type, $allowed_types)) {
-        throw new Exception('Invalid file type. Only JPEG, PNG, and GIF are allowed');
+        throw new Exception('Invalid file type (' . $file_type . '). Only JPEG, PNG, and GIF are allowed');
     }
     
     // Check if it's actually an image
@@ -101,6 +146,7 @@ function validateProfilePicture($file) {
     if ($image_info === false) {
         throw new Exception('File is not a valid image');
     }
+    
 }
 
 function resizeProfilePicture($file_path, $max_width, $max_height) {

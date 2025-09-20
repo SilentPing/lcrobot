@@ -4,6 +4,77 @@ include('includes/navbar.php');
 ?>
 
 <div class="container-fluid">
+    <!-- Birthplace Statistics Summary -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Botolan Residents</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="botolan_count">0</div>
+                            <div class="text-xs text-muted">LCRO + PSA eligible</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-home fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Non-Botolan Users</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="non_botolan_count">0</div>
+                            <div class="text-xs text-muted">PSA only</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-globe fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Complete Profiles</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="complete_count">0</div>
+                            <div class="text-xs text-muted">With birthplace data</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Incomplete Profiles</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="incomplete_count">0</div>
+                            <div class="text-xs text-muted">Missing birthplace data</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary"><i class="bi bi-people-fill"></i> Registered Users</h6>
@@ -21,6 +92,8 @@ include('includes/navbar.php');
                             <th>Username</th>
                             <th>Email</th>
                             <th>Contact Number</th>
+                            <th>Birthplace</th>
+                            <th>Document Eligibility</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -34,7 +107,18 @@ include('includes/navbar.php');
                             die("Connection failed: " . mysqli_connect_error());
                         }
 
-                        $query = "SELECT * FROM users ORDER BY create_datetime DESC"; // Sort by registration date
+                        $query = "SELECT *, 
+                                 CASE 
+                                     WHEN birthplace_municipality = '037101' AND birthplace_province = '0371' THEN 'Botolan, Zambales'
+                                     WHEN birthplace_municipality IS NOT NULL AND birthplace_province IS NOT NULL THEN 'Other Location'
+                                     ELSE 'Not Specified'
+                                 END as birthplace_display,
+                                 CASE 
+                                     WHEN birthplace_municipality = '037101' AND birthplace_province = '0371' THEN 'LCRO + PSA'
+                                     WHEN birthplace_municipality IS NOT NULL AND birthplace_province IS NOT NULL THEN 'PSA Only'
+                                     ELSE 'Incomplete Profile'
+                                 END as document_eligibility
+                                 FROM users ORDER BY create_datetime DESC"; // Sort by registration date
                         $query_run = mysqli_query($conn, $query);
 
                         // Check if the query was executed successfully
@@ -73,6 +157,38 @@ include('includes/navbar.php');
                                     <td><?php echo htmlspecialchars($row['username']); ?></td>
                                     <td><?php echo htmlspecialchars($row['email']); ?></td>
                                     <td><?php echo htmlspecialchars($row['contact_no']); ?></td>
+                                    <td>
+                                        <?php 
+                                        $birthplace = $row['birthplace_display'];
+                                        $birthplace_class = '';
+                                        if ($birthplace === 'Botolan, Zambales') {
+                                            $birthplace_class = 'success';
+                                        } elseif ($birthplace === 'Other Location') {
+                                            $birthplace_class = 'info';
+                                        } else {
+                                            $birthplace_class = 'warning';
+                                        }
+                                        ?>
+                                        <span class="badge badge-<?php echo $birthplace_class; ?>">
+                                            <?php echo htmlspecialchars($birthplace); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <?php 
+                                        $eligibility = $row['document_eligibility'];
+                                        $eligibility_class = '';
+                                        if ($eligibility === 'LCRO + PSA') {
+                                            $eligibility_class = 'success';
+                                        } elseif ($eligibility === 'PSA Only') {
+                                            $eligibility_class = 'info';
+                                        } else {
+                                            $eligibility_class = 'warning';
+                                        }
+                                        ?>
+                                        <span class="badge badge-<?php echo $eligibility_class; ?>">
+                                            <?php echo htmlspecialchars($eligibility); ?>
+                                        </span>
+                                    </td>
                                     <td>
                                         <?php 
                                         $status = $row['status'] ?? 'active';
@@ -266,6 +382,39 @@ function toggleUserStatus(userId, currentStatus) {
         }
     });
 }
+
+// Calculate and display birthplace statistics
+$(document).ready(function() {
+    // Count users by birthplace and eligibility
+    let botolanCount = 0;
+    let nonBotolanCount = 0;
+    let completeCount = 0;
+    let incompleteCount = 0;
+    
+    // Count from table data
+    $('#dataTable tbody tr').each(function() {
+        const birthplaceBadge = $(this).find('td:nth-child(9) .badge');
+        const eligibilityBadge = $(this).find('td:nth-child(10) .badge');
+        
+        if (birthplaceBadge.hasClass('badge-success')) {
+            botolanCount++;
+        } else if (birthplaceBadge.hasClass('badge-info')) {
+            nonBotolanCount++;
+        }
+        
+        if (eligibilityBadge.hasClass('badge-success') || eligibilityBadge.hasClass('badge-info')) {
+            completeCount++;
+        } else if (eligibilityBadge.hasClass('badge-warning')) {
+            incompleteCount++;
+        }
+    });
+    
+    // Update the statistics cards
+    $('#botolan_count').text(botolanCount);
+    $('#non_botolan_count').text(nonBotolanCount);
+    $('#complete_count').text(completeCount);
+    $('#incomplete_count').text(incompleteCount);
+});
 </script>
 
 <?php include('includes/footer.php'); ?>

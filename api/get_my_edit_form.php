@@ -87,6 +87,10 @@ try {
     $cityMunicipalityName = getCityMunicipalityName($user['city_municipality']);
     $barangayName = getBarangayName($user['street_brgy']);
     
+    // Convert birthplace codes to names
+    $birthplaceProvinceName = getProvinceName($user['birthplace_province'] ?? '');
+    $birthplaceMunicipalityName = getCityMunicipalityName($user['birthplace_municipality'] ?? '');
+    
     // Generate HTML content
     $html = '
     <div class="row">
@@ -238,6 +242,29 @@ try {
                     </div>
                 </div>
                 
+                <!-- Birthplace Information -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h6 class="text-primary mb-3"><i class="fas fa-map-marker-alt"></i> Birthplace Information</h6>
+                        <p class="text-muted small mb-3">This information determines which civil registry documents you can request.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="birthplace_municipality">Birthplace City/Municipality</label>
+                            <input type="text" class="form-control" id="birthplace_municipality" name="birthplace_municipality" 
+                                   value="' . htmlspecialchars($birthplaceMunicipalityName) . '" readonly>
+                            <small class="form-text text-muted">Birthplace information cannot be changed after registration</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                         <label for="birthplace_municipality">Birthplace Province</label>
+                             <input type="text" class="form-control" id="birthplace_province" name="birthplace_province" 
+                                   value="' . htmlspecialchars($birthplaceProvinceName) . '" readonly>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -271,9 +298,7 @@ try {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Change Password</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="change-password-form">
@@ -297,7 +322,7 @@ try {
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-warning" id="change-password-btn">Change Password</button>
                 </div>
             </div>
@@ -327,8 +352,12 @@ try {
     });
     
     function uploadProfilePicture(file) {
+        const userId = document.querySelector(\'input[name="user_id"]\').value;
+        console.log(\'Uploading profile picture for user ID:\', userId);
+        console.log(\'File details:\', file);
+        
         const formData = new FormData();
-        formData.append("user_id", ' . $user['id_user'] . ');
+        formData.append("user_id", userId);
         formData.append("profile_picture", file);
         
         $("#upload-progress").show();
@@ -368,11 +397,16 @@ try {
                     });
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.error(\'Upload error:\', xhr.responseText);
+                let errorMsg = "Failed to upload profile picture";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
                 Swal.fire({
                     icon: "error",
                     title: "Error!",
-                    text: "Failed to upload profile picture"
+                    text: errorMsg
                 });
             },
             complete: function() {

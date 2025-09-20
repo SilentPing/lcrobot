@@ -197,6 +197,87 @@ include('includes/navbar.php');
     </div>
   </div>
 
+  <!-- Statistics Cards Row 3 - Birthplace Statistics -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h4 class="text-gray-800 mb-3"><i class="fas fa-map-marker-alt text-info"></i> User Birthplace Statistics</h4>
+    </div>
+  </div>
+  
+  <div class="row mb-4">
+    <!-- Users Born in Botolan -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-success shadow h-100 py-2 stats-card" data-stat="botolan_users">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Botolan Residents</div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800" id="botolan_users">0</div>
+              <div class="text-xs text-muted">LCRO eligible</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-home fa-2x text-success"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Born Outside Botolan -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-info shadow h-100 py-2 stats-card" data-stat="non_botolan_users">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Non-Botolan Users</div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800" id="non_botolan_users">0</div>
+              <div class="text-xs text-muted">PSA only</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-globe fa-2x text-info"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complete Birthplace Data -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-primary shadow h-100 py-2 stats-card" data-stat="complete_birthplace_users">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Complete Profiles</div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800" id="complete_birthplace_users">0</div>
+              <div class="text-xs text-muted">With birthplace data</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-check-circle fa-2x text-primary"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Incomplete Birthplace Data -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-warning shadow h-100 py-2 stats-card" data-stat="incomplete_birthplace_users">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Incomplete Profiles</div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800" id="incomplete_birthplace_users">0</div>
+              <div class="text-xs text-muted">Missing birthplace</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
  <!-- Footer -->
  <footer class="sticky-footer bg-white">
@@ -240,6 +321,12 @@ $(document).ready(function() {
                     updateStatCard('today_released', data.today_released);
                     updateStatCard('rejected_requests', data.rejected_requests);
                     updateStatCard('avg_processing_days', data.avg_processing_days);
+                    
+                    // Update birthplace statistics
+                    updateStatCard('botolan_users', data.botolan_users);
+                    updateStatCard('non_botolan_users', data.non_botolan_users);
+                    updateStatCard('complete_birthplace_users', data.complete_birthplace_users);
+                    updateStatCard('incomplete_birthplace_users', data.incomplete_birthplace_users);
                     
                     // Update last update time
                     $('#lastUpdate').text(data.system_health.last_update);

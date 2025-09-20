@@ -49,6 +49,43 @@ if (isset($_SESSION['user_data'])) {
 // Load database connection and encryption functions
 require_once __DIR__ . '/db.php';
 
+// Get user's document eligibility
+$email = $_SESSION['name']; // This is actually the email address
+$query = "SELECT birthplace_municipality, birthplace_province FROM users WHERE email = ?";
+$stmt = mysqli_prepare($conn, $query);
+
+if (!$stmt) {
+    error_log("Failed to prepare statement: " . mysqli_error($conn));
+    $documentEligibility = null;
+} else {
+    mysqli_stmt_bind_param($stmt, "s", $email);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $documentEligibility = null;
+    if ($row = mysqli_fetch_assoc($result)) {
+        $birthplaceMunicipality = $row['birthplace_municipality'];
+        $birthplaceProvince = $row['birthplace_province'];
+        
+        // Check if user was born in Botolan, Zambales
+        $isBornInBotolan = ($birthplaceMunicipality === '037101' && $birthplaceProvince === '0371');
+        
+        $documentEligibility = [
+            'isBornInBotolan' => $isBornInBotolan,
+            'canRequestPSA' => true, // Everyone can request PSA documents
+            'canRequestLCRO' => $isBornInBotolan, // Only those born in Botolan can request LCRO documents
+            'message' => $isBornInBotolan ? 
+                'You can request both PSA and LCRO documents since you were born in Botolan, Zambales.' :
+                'You can only request PSA documents. LCRO documents are only available for those born in Botolan, Zambales.'
+        ];
+        
+        // Store in session for quick access
+        $_SESSION['document_eligibility'] = $documentEligibility;
+    } else {
+        error_log("No user found with email: " . $email);
+    }
+}
+
 // Check if the form has been submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve data from the form
@@ -68,6 +105,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $moth_maiden_mn = $_POST["moth_maiden_mn"];
     $relationship = $_POST["relationship"];
     $purpose_of_request = $_POST["purpose_of_request"];
+    $document_type = $_POST["document_type"];
     $type_request = $_POST["type_request"];
     $status_request = 'PENDING';
     $id_user = $_POST['id_user']; // Retrieve id_user from the form data
@@ -85,10 +123,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $registrar_name = "$firstname $middlename $lastname"; // Replace with the actual registrar's name
 
     // SQL query to insert data into the birthceno_tbl table with encrypted fields
-    $stmt = $conn->prepare("INSERT INTO birthceno_tbl (id_user, lastname, lastname_enc, lastname_tok, firstname, firstname_enc, firstname_tok, middlename, middlename_enc, middlename_tok, pob_country, pob_province, pob_municipality, dob, dob_enc, dob_tok, sex, sex_enc, sex_tok, fath_ln, fath_fn, fath_mn, moth_maiden_ln, moth_maiden_fn, moth_maiden_mn, relationship, purpose_of_request, type_request, status_request) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO birthceno_tbl (id_user, lastname, lastname_enc, lastname_tok, firstname, firstname_enc, firstname_tok, middlename, middlename_enc, middlename_tok, pob_country, pob_province, pob_municipality, dob, dob_enc, dob_tok, sex, sex_enc, sex_tok, fath_ln, fath_fn, fath_mn, moth_maiden_ln, moth_maiden_fn, moth_maiden_mn, relationship, purpose_of_request, document_type, type_request, status_request) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         // Bind parameters to the placeholders
-    $stmt->bind_param("issssssssssssssssssssssssssss", 
+    $stmt->bind_param("isssssssssssssssssssssssssssss", 
         $id_user, 
         $lastname, // Keep original for backward compatibility
         $lastname_data['encrypted'], $lastname_data['token'],
@@ -96,13 +134,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $firstname_data['encrypted'], $firstname_data['token'],
         $middlename, // Keep original for backward compatibility
         $middlename_data['encrypted'], $middlename_data['token'],
-        $pob_country, $pob_province, $pob_municipality, 
+        $pob_country, $pob_province, $pob_municipality,
         $dob, // Keep original for backward compatibility
         $dob_data['encrypted'], $dob_data['token'],
         $sex, // Keep original for backward compatibility
         $sex_data['encrypted'], $sex_data['token'],
         $fath_ln, $fath_fn, $fath_mn, $moth_maiden_ln, $moth_maiden_fn, $moth_maiden_mn, 
-        $relationship, $purpose_of_request, $type_request, $status_request);
+        $relationship, $purpose_of_request, $document_type, $type_request, $status_request);
     
     if ($stmt->execute()) {
         // Insert data into civ_record table
@@ -428,7 +466,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <option value="Record Keeping">Record Keeping</option>
                                     <option value="Other">Other</option>
                                 </select>
+                        </div>
+
+                        <div class="input-field">
+                            <label for="document_type">Document Type</label>
+                            <select name="document_type" id="document_type" class="form-control" required>
+                                <option value="" disabled selected>Select document type</option>
+                                <option value="PSA">PSA Document (Available to all)</option>
+                                <option value="LCRO" id="lcro_option" disabled>LCRO Document (Botolan residents only)</option>
+                            </select>
+                            <small class="form-text text-muted" id="document_type_help">
+                                PSA documents are available to everyone. LCRO documents are only available for those born in Botolan, Zambales.
+                            </small>
+                            
+                            <!-- Debug Information (remove in production) -->
+                            <!-- <?php if ($documentEligibility): ?>
+                            <div class="alert alert-info mt-2" style="font-size: 0.8rem;">
+                                <strong>Debug Info:</strong><br>
+                                Email: <?php echo $email; ?><br>
+                                Birthplace Municipality: <?php echo $birthplaceMunicipality; ?><br>
+                                Birthplace Province: <?php echo $birthplaceProvince; ?><br>
+                                Born in Botolan: <?php echo $documentEligibility['isBornInBotolan'] ? 'Yes' : 'No'; ?><br>
+                                Can Request LCRO: <?php echo $documentEligibility['canRequestLCRO'] ? 'Yes' : 'No'; ?>
+                            </div> -->
+                            <?php else: ?>
+                            <div class="alert alert-warning mt-2" style="font-size: 0.8rem;">
+                                <strong>Debug Info:</strong> No document eligibility data found.<br>
+                                Email: <?php echo $email; ?><br>
+                                <a href="check_user_data.php" target="_blank">Click here to check your profile data</a>
                             </div>
+                            <?php endif; ?>
+                        </div>
                             
                         <div class="input-field second-dob exclude-popover">
                             <label>Type of Request</label>
@@ -585,6 +653,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Attach an event listener to the "Back" button
     document.getElementById('backButton').addEventListener('click', redirectToDashboard);
+</script>
+
+<script>
+    // Check user's document eligibility and enable/disable LCRO option
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Document eligibility check starting...');
+        
+        // Get user's document eligibility from session
+        <?php if (isset($_SESSION['document_eligibility'])): ?>
+            var documentEligibility = <?php echo json_encode($_SESSION['document_eligibility']); ?>;
+            console.log('Document eligibility data:', documentEligibility);
+            
+            if (documentEligibility && documentEligibility.canRequestLCRO) {
+                // Enable LCRO option if user was born in Botolan
+                console.log('Enabling LCRO option - user born in Botolan');
+                document.getElementById('lcro_option').disabled = false;
+                document.getElementById('document_type_help').innerHTML = 
+                    'You can request both PSA and LCRO documents since you were born in Botolan, Zambales.';
+            } else {
+                // Keep LCRO option disabled and update help text
+                console.log('Keeping LCRO option disabled - user not born in Botolan');
+                document.getElementById('lcro_option').disabled = true;
+                document.getElementById('document_type_help').innerHTML = 
+                    'PSA documents are available to everyone. LCRO documents are only available for those born in Botolan, Zambales.';
+            }
+        <?php else: ?>
+            // If no eligibility data, keep LCRO disabled
+            console.log('No document eligibility data found in session');
+            document.getElementById('lcro_option').disabled = true;
+        <?php endif; ?>
+        
+        // Add change event listener to document type selection
+        document.getElementById('document_type').addEventListener('change', function() {
+            var selectedType = this.value;
+            var helpText = document.getElementById('document_type_help');
+            
+            if (selectedType === 'LCRO') {
+                helpText.innerHTML = 'LCRO documents are issued by the Local Civil Registry Office and are only available for those born in Botolan, Zambales.';
+                helpText.className = 'form-text text-success';
+            } else if (selectedType === 'PSA') {
+                helpText.innerHTML = 'PSA documents are issued by the Philippine Statistics Authority and are available to everyone.';
+                helpText.className = 'form-text text-info';
+            } else {
+                helpText.innerHTML = 'PSA documents are available to everyone. LCRO documents are only available for those born in Botolan, Zambales.';
+                helpText.className = 'form-text text-muted';
+            }
+        });
+    });
 </script>
 
 <script>
