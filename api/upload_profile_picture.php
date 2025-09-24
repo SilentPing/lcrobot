@@ -94,8 +94,12 @@ try {
     // Resize image if needed
     resizeProfilePicture($file_path, 200, 200);
     
-    // Update database
+    // Update database with properly formatted path
     $relative_path = 'uploads/profile_pictures/' . $filename;
+    
+    // Ensure the path is web-compatible (no spaces, proper format)
+    $relative_path = str_replace(' ', '_', $relative_path);
+    
     $sql = "UPDATE users SET profile_picture = ? WHERE id_user = ?";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, 'si', $relative_path, $user_id);

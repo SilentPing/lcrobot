@@ -14,18 +14,47 @@ if(!isset($_SESSION['name'])) {
 // Load database connection
 require_once __DIR__ . '/db.php';
 
-// Get user's document eligibility
+// Get user's document eligibility and profile picture
 $email = $_SESSION['name']; // This is actually the email address
-$query = "SELECT birthplace_municipality, birthplace_province FROM users WHERE email = ?";
+$query = "SELECT birthplace_municipality, birthplace_province, profile_picture FROM users WHERE email = ?";
 $stmt = mysqli_prepare($conn, $query);
 mysqli_stmt_bind_param($stmt, "s", $email);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 
+// Clear any cached profile picture data
+unset($_SESSION['user_profile_picture']);
+
 $documentEligibility = null;
+$userProfilePicture = 'images/lcro.jpg'; // Default profile picture
+
 if ($row = mysqli_fetch_assoc($result)) {
     $birthplaceMunicipality = $row['birthplace_municipality'];
     $birthplaceProvince = $row['birthplace_province'];
+    $profilePicture = $row['profile_picture'];
+    
+    // Set profile picture path
+    if (!empty($profilePicture)) {
+        // Try different path variations to find the profile picture
+        $path_variations = [
+            $profilePicture, // Original path from database
+            __DIR__ . '/' . $profilePicture, // With full directory path
+            'uploads/profile_pictures/' . basename($profilePicture), // Just filename in uploads dir
+        ];
+        
+        foreach ($path_variations as $path) {
+            if (file_exists($path)) {
+                // Ensure the path is web-accessible (relative to web root)
+                if (strpos($path, 'uploads/profile_pictures/') !== false) {
+                    $userProfilePicture = $path;
+                } else {
+                    // Convert absolute path to relative web path
+                    $userProfilePicture = 'uploads/profile_pictures/' . basename($path);
+                }
+                break;
+            }
+        }
+    }
     
     // Check if user was born in Botolan, Zambales
     $isBornInBotolan = ($birthplaceMunicipality === '037101' && $birthplaceProvince === '0371');
@@ -50,8 +79,12 @@ if ($row = mysqli_fetch_assoc($result)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="cache-buster" content="<?php echo time(); ?>">
     <title>BMCROP | User Dashboard</title>
-    <link rel="icon" href="images/civ.png" type="images/png">
+    <link rel="icon" href="images/lcrobot.png" type="images/png">
 
 
     <!-- font awesome cdn link  -->
@@ -132,6 +165,26 @@ if ($row = mysqli_fetch_assoc($result)) {
         margin-right: 20px; /* Adjust this value to your preference */
     }
 
+    /* Profile picture size constraints */
+    #user-profile-picture {
+        width: 32px !important;
+        height: 32px !important;
+        max-width: 32px !important;
+        max-height: 32px !important;
+        min-width: 32px !important;
+        min-height: 32px !important;
+    }
+    
+    /* Ensure navbar doesn't expand */
+    .navbar {
+        min-height: auto !important;
+    }
+    
+    .dropdown.text-end {
+        display: flex;
+        align-items: center;
+    }
+
     </style>
 
     
@@ -158,7 +211,7 @@ if ($row = mysqli_fetch_assoc($result)) {
 
         <div class="dropdown text-end">
           <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="images/lcro.jpg" alt="User Image" width="32" height="32" class="rounded-circle">
+            <img src="api/serve_profile_picture.php?t=<?php echo time(); ?>&r=<?php echo rand(1000, 9999); ?>" alt="User Profile Picture" width="32" height="32" class="rounded-circle" style="object-fit: cover; max-width: 32px; max-height: 32px;" id="user-profile-picture">
           </a>
           <ul class="dropdown-menu text-small">
             <li><hr class="dropdown-divider"></li>
@@ -267,7 +320,7 @@ if ($row = mysqli_fetch_assoc($result)) {
  <div class="box-container">
 <div class="box">
     <img src="images/birth1.svg" alt="">
-    <img src="images/civ.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
+    <img src="images/lcrobot.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
     <h3>Birth Certificate</h3>
     <p>Birth certificate is a vital record documenting a person's birth, either as the original document or a certified copy</p>
     <div class="document-type-badges mb-2">
@@ -276,13 +329,13 @@ if ($row = mysqli_fetch_assoc($result)) {
             <span class="badge bg-success">LCRO Available</span>
         <?php endif; ?>
     </div>
-    <a href="birth_form.php?type_request=Birth Certificate" class="btn">Request Now</a>
+    <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#pricingModal" data-document-type="Birth Certificate">Request Now</a>
 </div>
 
 
     <div class="box">
         <img src="images/marriage1.svg" alt="">
-        <img src="images/civ.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
+        <img src="images/lcrobot.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
         <h3>Marriage Certificate</h3>
         <p>Marriage certificate is an official document confirming marriage, issued by a government official after civil registration</p>
         <div class="document-type-badges mb-2">
@@ -291,12 +344,12 @@ if ($row = mysqli_fetch_assoc($result)) {
                 <span class="badge bg-success">LCRO Available</span>
             <?php endif; ?>
         </div>
-        <a href="marriage_form.php?type_request=Marriage Certificate" class="btn">Request Now</a>
+        <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#pricingModal" data-document-type="Marriage Certificate">Request Now</a>
     </div>
 
     <div class="box">
         <img src="images/death1.svg" alt="">
-        <img src="images/civ.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
+        <img src="images/lcrobot.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
         <h3>Death Certificate</h3>
         <p>A death certificate is a legal document from a medical practitioner or a government civil registration office stating the date, location, and cause of a person's death</p>
         <div class="document-type-badges mb-2">
@@ -305,12 +358,12 @@ if ($row = mysqli_fetch_assoc($result)) {
                 <span class="badge bg-success">LCRO Available</span>
             <?php endif; ?>
         </div>
-        <a href="death_form.php?type_request=Death Certificate" class="btn">Request Now</a>
+        <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#pricingModal" data-document-type="Death Certificate">Request Now</a>
     </div>
 
     <div class="box">
         <img src="images/cen1.svg" alt="">
-        <img src="images/civ.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
+        <img src="images/lcrobot.png" alt="MCRO Logo" class="mcro-logo" style="float: right; margin-left: 10px;">
         <h3>CENOMAR</h3>
         <p>A Certificate of No Marriage Record (CENOMAR) is simply what its name implies. It is a certification issued by the PSA stating that a person has not contracted any marriage</p>
         <div class="document-type-badges mb-2">
@@ -319,7 +372,7 @@ if ($row = mysqli_fetch_assoc($result)) {
                 <span class="badge bg-success">LCRO Available</span>
             <?php endif; ?>
         </div>
-        <a href="ceno_form.php?type_request=CENOMAR" class="btn">Request Now</a>
+        <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#pricingModal" data-document-type="CENOMAR">Request Now</a>
     </div>
 
  </div>
@@ -531,7 +584,7 @@ if ($row = mysqli_fetch_assoc($result)) {
     <div class="box-container">
 
         <div class="box">
-            <h3>Civil Registrar of Botolan</h3>
+            <h3>Local Civil Registry of Botolan</h3>
             <p>2023</p>
         </div>
 
@@ -551,7 +604,7 @@ if ($row = mysqli_fetch_assoc($result)) {
 
     </div>
 
-    <h1 class="credit"><a href="https://web.facebook.com/mcrobotolan/?locale=fr_FR&_rdc=1&_rdr">MCRO</a> All Rights Reserve</h1>
+    <h1 class="credit"><a href="https://web.facebook.com/mcrobotolan/?locale=fr_FR&_rdc=1&_rdr">LCRO</a> All Rights Reserve</h1>
 
 </div>
 
@@ -608,6 +661,115 @@ if ($row = mysqli_fetch_assoc($result)) {
 
 <?php unset($_SESSION['login_success']); } ?>
 
+<!-- Pricing Modal -->
+<div class="modal fade" id="pricingModal" tabindex="-1" aria-labelledby="pricingModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pricingModalLabel">
+          <i class="fas fa-file-invoice-dollar text-primary me-2"></i>
+          <span id="modalDocumentTitle">Document Pricing</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-12">
+            <div class="alert alert-info" role="alert">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Please select the type of document you need:</strong>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <!-- Original Document Option -->
+          <div class="col-md-6 mb-3">
+            <div class="card h-100 border-primary">
+              <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                  <i class="fas fa-file-alt me-2"></i>Original Document
+                </h6>
+              </div>
+              <div class="card-body">
+                <div class="text-center mb-3">
+                  <h3 class="text-primary">₱80.00</h3>
+                  <small class="text-muted">per copy</small>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="documentType" id="originalDocument" value="original">
+                  <label class="form-check-label" for="originalDocument">
+                    <strong>Select Original Document</strong>
+                  </label>
+                </div>
+                <hr>
+                <div class="form-details">
+                  <h6 class="text-muted mb-2">Form Numbers:</h6>
+                  <ul class="list-unstyled small">
+                    <li id="originalForm102" class="d-none">• Form 102 (Birth Certificate)</li>
+                    <li id="originalForm97" class="d-none">• Form 97 (Marriage Certificate)</li>
+                    <li id="originalForm103" class="d-none">• Form 103 (Death Certificate)</li>
+                    <li id="originalFormCENO" class="d-none">• Form 102 (CENOMAR)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transcription Option -->
+          <div class="col-md-6 mb-3">
+            <div class="card h-100 border-success">
+              <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                  <i class="fas fa-file-signature me-2"></i>Transcription
+                </h6>
+              </div>
+              <div class="card-body">
+                <div class="text-center mb-3">
+                  <h3 class="text-success">₱100.00</h3>
+                  <small class="text-muted">per copy</small>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="documentType" id="transcriptionDocument" value="transcription">
+                  <label class="form-check-label" for="transcriptionDocument">
+                    <strong>Select Transcription</strong>
+                  </label>
+                </div>
+                <hr>
+                <div class="form-details">
+                  <h6 class="text-muted mb-2">Form Numbers:</h6>
+                  <ul class="list-unstyled small">
+                    <li id="transcriptionForm1A" class="d-none">• Form 1A (Birth Certificate)</li>
+                    <li id="transcriptionForm2A" class="d-none">• Form 2A (Death Certificate)</li>
+                    <li id="transcriptionForm3A" class="d-none">• Form 3A (Marriage Certificate)</li>
+                    <li id="transcriptionFormCENO" class="d-none">• Form 1A (CENOMAR)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row mt-3">
+          <div class="col-12">
+            <div class="alert alert-warning" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Important:</strong> Please ensure you have all required documents and information before proceeding with your request.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Cancel
+        </button>
+        <button type="button" class="btn btn-primary" id="proceedToRequest" disabled>
+          <i class="fas fa-arrow-right me-2"></i>Proceed to Request
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Add this script at the end of your HTML, just before </body> tag -->
 <script>
@@ -647,6 +809,222 @@ if ($row = mysqli_fetch_assoc($result)) {
       }
     });
   });
+
+  // Pricing Modal JavaScript
+  let currentDocumentType = '';
+  let selectedDocumentForm = '';
+  let pricingData = {};
+
+  // Load pricing data when page loads
+  loadPricingData();
+  
+  // Refresh profile picture when page loads or when returning from profile page
+  refreshProfilePicture();
+
+  // Handle request button clicks
+  $('[data-bs-target="#pricingModal"]').click(function(e) {
+    e.preventDefault();
+    currentDocumentType = $(this).data('document-type');
+    $('#modalDocumentTitle').text(currentDocumentType + ' - Pricing');
+    
+    // Reset form selection
+    $('input[name="documentType"]').prop('checked', false);
+    $('#proceedToRequest').prop('disabled', true);
+    
+    // Hide all form details initially
+    $('.form-details li').addClass('d-none');
+    
+    // Show relevant form details based on document type
+    showRelevantForms(currentDocumentType);
+  });
+
+  // Handle document type selection
+  $('input[name="documentType"]').change(function() {
+    if ($(this).is(':checked')) {
+      selectedDocumentForm = $(this).val();
+      $('#proceedToRequest').prop('disabled', false);
+    }
+  });
+
+  // Handle proceed to request button
+  $('#proceedToRequest').click(function() {
+    if (selectedDocumentForm && currentDocumentType) {
+      // Determine the form URL based on document type
+      let formUrl = '';
+      switch(currentDocumentType) {
+        case 'Birth Certificate':
+          formUrl = 'birth_form.php';
+          break;
+        case 'Marriage Certificate':
+          formUrl = 'marriage_form.php';
+          break;
+        case 'Death Certificate':
+          formUrl = 'death_form.php';
+          break;
+        case 'CENOMAR':
+          formUrl = 'ceno_form.php';
+          break;
+      }
+      
+      // Add document type and form type as URL parameters
+      let url = formUrl + '?type_request=' + encodeURIComponent(currentDocumentType) + 
+                '&document_form=' + encodeURIComponent(selectedDocumentForm);
+      
+      // Close modal and redirect
+      $('#pricingModal').modal('hide');
+      window.location.href = url;
+    }
+  });
+
+  // Function to load pricing data from API
+  function loadPricingData() {
+    $.ajax({
+      url: 'api/get_pricing.php',
+      method: 'GET',
+      dataType: 'json',
+      success: function(response) {
+        if (response.success) {
+          pricingData = {};
+          response.data.forEach(function(item) {
+            if (!pricingData[item.document_type]) {
+              pricingData[item.document_type] = {};
+            }
+            pricingData[item.document_type][item.form_type] = item;
+          });
+          console.log('Pricing data loaded successfully:', pricingData);
+        } else {
+          console.error('Failed to load pricing data:', response.message);
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('Error loading pricing data:', error);
+      }
+    });
+  }
+
+  // Function to show relevant forms based on document type
+  function showRelevantForms(documentType) {
+    // Hide all first
+    $('.form-details li').addClass('d-none');
+    
+    // Update pricing from database
+    updatePricingFromDatabase(documentType);
+    
+    // Show relevant form details
+    if (pricingData[documentType]) {
+      if (pricingData[documentType]['original']) {
+        const originalForm = pricingData[documentType]['original'];
+        $('#originalForm102, #originalForm97, #originalForm103, #originalFormCENO').addClass('d-none');
+        $(`#originalForm${originalForm.form_number}`).removeClass('d-none');
+      }
+      
+      if (pricingData[documentType]['transcription']) {
+        const transcriptionForm = pricingData[documentType]['transcription'];
+        $('#transcriptionForm1A, #transcriptionForm2A, #transcriptionForm3A, #transcriptionFormCENO').addClass('d-none');
+        $(`#transcriptionForm${transcriptionForm.form_number}`).removeClass('d-none');
+      }
+    }
+  }
+
+  // Function to update pricing from database
+  function updatePricingFromDatabase(documentType) {
+    if (pricingData[documentType]) {
+      // Update original document pricing
+      if (pricingData[documentType]['original']) {
+        const originalData = pricingData[documentType]['original'];
+        $('.card.border-primary .text-primary').text('₱' + originalData.price.toFixed(2));
+        $('.card.border-primary .form-check-label strong').text('Select Original Document');
+      }
+      
+      // Update transcription pricing
+      if (pricingData[documentType]['transcription']) {
+        const transcriptionData = pricingData[documentType]['transcription'];
+        $('.card.border-success .text-success').text('₱' + transcriptionData.price.toFixed(2));
+        $('.card.border-success .form-check-label strong').text('Select Transcription');
+      }
+    }
+  }
+
+  // Reset modal when closed
+  $('#pricingModal').on('hidden.bs.modal', function () {
+    $('input[name="documentType"]').prop('checked', false);
+    $('#proceedToRequest').prop('disabled', true);
+    currentDocumentType = '';
+    selectedDocumentForm = '';
+  });
+
+  // Function to refresh profile picture
+  function refreshProfilePicture() {
+    const profileImg = $('#user-profile-picture');
+    if (profileImg.length) {
+      // Use direct image endpoint with cache-busting
+      const newSrc = 'api/serve_profile_picture.php?t=' + Date.now() + '&r=' + Math.random();
+      
+      // Create new image element
+      const newImg = $('<img>', {
+        src: newSrc,
+        alt: 'User Profile Picture',
+        width: '32',
+        height: '32',
+        class: 'rounded-circle',
+        style: 'object-fit: cover; max-width: 32px; max-height: 32px;',
+        id: 'user-profile-picture'
+      });
+      
+      // Replace the old image with the new one
+      profileImg.replaceWith(newImg);
+      
+      console.log('Profile picture refreshed with direct endpoint:', newSrc);
+    }
+  }
+
+  // Refresh profile picture when page becomes visible (user returns from profile page)
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+      refreshProfilePicture();
+    }
+  });
+
+  // Also refresh when page gains focus
+  window.addEventListener('focus', function() {
+    refreshProfilePicture();
+  });
+
+  // Force refresh on page load to clear any cached images
+  $(document).ready(function() {
+    // Immediate refresh on page load
+    refreshProfilePicture();
+    
+    // Also refresh after a short delay
+    setTimeout(function() {
+      refreshProfilePicture();
+    }, 1000);
+    
+  });
+
+  // Nuclear option: completely replace the image container
+  function nuclearProfilePictureRefresh() {
+    const newSrc = 'api/serve_profile_picture.php?t=' + Date.now() + '&r=' + Math.random() + '&nuclear=' + Date.now();
+    
+    // Find the dropdown container
+    const dropdown = $('.dropdown.text-end');
+    if (dropdown.length) {
+      // Replace the entire dropdown content
+      const newContent = `
+        <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <img src="${newSrc}" alt="User Profile Picture" width="32" height="32" class="rounded-circle" style="object-fit: cover; max-width: 32px; max-height: 32px;" id="user-profile-picture">
+        </a>
+        <ul class="dropdown-menu text-small">
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="user_profile.php">Profile</a></li>
+          <li><a class="dropdown-item" href="logout.php">Sign out</a></li>
+        </ul>
+      `;
+      
+      dropdown.html(newContent);
+      console.log('Nuclear profile picture refresh completed:', newSrc);
+    }
+  }
 </script>
 
 

@@ -5,7 +5,7 @@
 <a class="sidebar-brand d-flex align-items-center justify-content-center" href="admin_dashboard.php">
   <div class="sidebar-brand-icon">
     <!-- Replace 'path_to_your_logo_image' with the actual path to your LGU logo image -->
-    <img src="images/civ.png" alt="LGU Logo" style="width: 50px; height: 50px;"> <!-- Adjust width and height as needed -->
+    <img src="images/lcrobot.png" alt="LGU Logo" style="width: 50px; height: 50px;"> <!-- Adjust width and height as needed -->
   </div>
   <div class="sidebar-brand-text mx-2">CIVIL REGISTRY <sup>BOTOLAN</sup></div>
 </a>

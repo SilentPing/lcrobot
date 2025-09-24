@@ -27,7 +27,7 @@ include('includes/navbar.php');
 
   <!-- Page Heading -->
   <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Botolan Civil Registry Online Portal Admin Dashboard</h1>
+    <h1 class="h3 mb-0 text-gray-800">LCRO Admin Dashboard</h1>
     <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
         class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
   </div>
@@ -278,6 +278,182 @@ include('includes/navbar.php');
     </div>
   </div>
 
+  <!-- Pricing Management Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h4 class="text-gray-800 mb-3"><i class="fas fa-dollar-sign text-success"></i> Document Pricing Management</h4>
+    </div>
+  </div>
+  
+  <div class="row mb-4">
+    <!-- Pricing Overview Card -->
+    <div class="col-xl-8 col-lg-7">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Current Document Pricing</h6>
+          <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+              <div class="dropdown-header">Pricing Actions:</div>
+              <a class="dropdown-item" href="#" onclick="refreshPricingData()">
+                <i class="fas fa-sync-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                Refresh Data
+              </a>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-header">Export Options:</div>
+              <a class="dropdown-item" href="#" onclick="exportPricingData('csv')">
+                <i class="fas fa-file-csv fa-sm fa-fw mr-2 text-success"></i>
+                Export as CSV
+              </a>
+              <a class="dropdown-item" href="#" onclick="exportPricingData('pdf')">
+                <i class="fas fa-file-pdf fa-sm fa-fw mr-2 text-danger"></i>
+                Export as PDF
+              </a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#" onclick="showAddPricingModal()">
+                <i class="fas fa-plus fa-sm fa-fw mr-2 text-gray-400"></i>
+                Add New Pricing
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered" id="pricingTable" width="100%" cellspacing="0">
+              <thead>
+                <tr>
+                  <th>Document Type</th>
+                  <th>Form Type</th>
+                  <th>Form Number</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pricingTableBody">
+                <tr>
+                  <td colspan="6" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                    <br>Loading pricing data...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing Statistics Card -->
+    <div class="col-xl-4 col-lg-5">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Pricing Statistics</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-6">
+              <div class="text-center">
+                <div class="h4 mb-0 font-weight-bold text-primary" id="totalPricingItems">0</div>
+                <div class="text-xs text-muted">Total Items</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="text-center">
+                <div class="h4 mb-0 font-weight-bold text-success" id="activePricingItems">0</div>
+                <div class="text-xs text-muted">Active Items</div>
+              </div>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-6">
+              <div class="text-center">
+                <div class="h4 mb-0 font-weight-bold text-info" id="originalDocuments">0</div>
+                <div class="text-xs text-muted">Original Docs</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="text-center">
+                <div class="h4 mb-0 font-weight-bold text-warning" id="transcriptions">0</div>
+                <div class="text-xs text-muted">Transcriptions</div>
+              </div>
+            </div>
+          </div>
+          <hr>
+          <div class="text-center">
+            <div class="h5 mb-0 font-weight-bold text-success" id="averagePrice">₱0.00</div>
+            <div class="text-xs text-muted">Average Price</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Pricing Modal -->
+  <div class="modal fade" id="editPricingModal" tabindex="-1" aria-labelledby="editPricingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editPricingModalLabel">
+            <i class="fas fa-edit text-primary me-2"></i>Edit Document Pricing
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editPricingForm">
+            <input type="hidden" id="editPricingId" name="id">
+            
+            <div class="mb-3">
+              <label for="editDocumentType" class="form-label">Document Type</label>
+              <input type="text" class="form-control" id="editDocumentType" name="document_type" readonly>
+            </div>
+            
+            <div class="mb-3">
+              <label for="editFormType" class="form-label">Form Type</label>
+              <input type="text" class="form-control" id="editFormType" name="form_type" readonly>
+            </div>
+            
+            <div class="mb-3">
+              <label for="editFormNumber" class="form-label">Form Number</label>
+              <input type="text" class="form-control" id="editFormNumber" name="form_number" readonly>
+            </div>
+            
+            <div class="mb-3">
+              <label for="editPrice" class="form-label">Price (₱)</label>
+              <input type="number" class="form-control" id="editPrice" name="price" step="0.01" min="0" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="editDescription" class="form-label">Description</label>
+              <textarea class="form-control" id="editDescription" name="description" rows="3"></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="editIsActive" name="is_active" checked>
+                <label class="form-check-label" for="editIsActive">
+                  Active (Available for users)
+                </label>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-primary" onclick="updatePricing()">
+            <i class="fas fa-save me-2"></i>Update Pricing
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
  <!-- Footer -->
  <footer class="sticky-footer bg-white">
@@ -433,7 +609,259 @@ $(document).ready(function() {
     $(window).on('beforeunload', function() {
         clearInterval(statsInterval);
     });
+    
+    // Pricing Management System
+    loadPricingData();
+    
+    // Load pricing data every 5 minutes
+    setInterval(loadPricingData, 300000);
+    
+    // Initialize dropdown functionality
+    initializeDropdowns();
 });
+
+// Pricing Management Functions
+function loadPricingData() {
+    $.ajax({
+        url: 'api/get_pricing.php',
+        method: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                populatePricingTable(response.data);
+                updatePricingStatistics(response.data);
+            } else {
+                showPricingError('Failed to load pricing data: ' + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            showPricingError('Error loading pricing data: ' + error);
+        }
+    });
+}
+
+function populatePricingTable(data) {
+    const tbody = $('#pricingTableBody');
+    tbody.empty();
+    
+    if (data.length === 0) {
+        tbody.html('<tr><td colspan="6" class="text-center text-muted">No pricing data found</td></tr>');
+        return;
+    }
+    
+    data.forEach(function(item) {
+        const row = `
+            <tr>
+                <td>${item.document_type}</td>
+                <td><span class="badge ${item.form_type === 'original' ? 'bg-primary' : 'bg-success'}">${item.form_type}</span></td>
+                <td><strong>Form ${item.form_number}</strong></td>
+                <td><strong class="text-success">₱${parseFloat(item.price).toFixed(2)}</strong></td>
+                <td>
+                    <span class="badge ${item.is_active ? 'bg-success' : 'bg-secondary'}">
+                        ${item.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="editPricing(${item.id})" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-${item.is_active ? 'warning' : 'success'}" 
+                            onclick="togglePricingStatus(${item.id}, ${item.is_active})" 
+                            title="${item.is_active ? 'Deactivate' : 'Activate'}">
+                        <i class="fas fa-${item.is_active ? 'pause' : 'play'}"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        tbody.append(row);
+    });
+}
+
+function updatePricingStatistics(data) {
+    const total = data.length;
+    const active = data.filter(item => item.is_active).length;
+    const original = data.filter(item => item.form_type === 'original').length;
+    const transcription = data.filter(item => item.form_type === 'transcription').length;
+    const average = data.length > 0 ? data.reduce((sum, item) => sum + parseFloat(item.price), 0) / data.length : 0;
+    
+    $('#totalPricingItems').text(total);
+    $('#activePricingItems').text(active);
+    $('#originalDocuments').text(original);
+    $('#transcriptions').text(transcription);
+    $('#averagePrice').text('₱' + average.toFixed(2));
+}
+
+function editPricing(id) {
+    // Find the pricing item
+    $.ajax({
+        url: 'api/get_pricing.php',
+        method: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                const item = response.data.find(p => p.id === id);
+                if (item) {
+                    $('#editPricingId').val(item.id);
+                    $('#editDocumentType').val(item.document_type);
+                    $('#editFormType').val(item.form_type);
+                    $('#editFormNumber').val(item.form_number);
+                    $('#editPrice').val(item.price);
+                    $('#editDescription').val(item.description);
+                    $('#editIsActive').prop('checked', item.is_active);
+                    
+                    $('#editPricingModal').modal('show');
+                }
+            }
+        }
+    });
+}
+
+function updatePricing() {
+    const formData = {
+        id: $('#editPricingId').val(),
+        price: $('#editPrice').val(),
+        description: $('#editDescription').val(),
+        is_active: $('#editIsActive').is(':checked') ? 1 : 0
+    };
+    
+    $.ajax({
+        url: 'api/update_pricing.php',
+        method: 'POST',
+        data: formData,
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                $('#editPricingModal').modal('hide');
+                loadPricingData();
+                showSuccessMessage('Pricing updated successfully!');
+            } else {
+                showErrorMessage('Failed to update pricing: ' + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            showErrorMessage('Error updating pricing: ' + error);
+        }
+    });
+}
+
+function togglePricingStatus(id, currentStatus) {
+    const newStatus = !currentStatus;
+    const action = newStatus ? 'activate' : 'deactivate';
+    
+    Swal.fire({
+        title: 'Confirm Action',
+        text: `Are you sure you want to ${action} this pricing item?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: newStatus ? '#28a745' : '#ffc107',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: `Yes, ${action}!`,
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: 'api/update_pricing.php',
+                method: 'POST',
+                data: {
+                    id: id,
+                    is_active: newStatus ? 1 : 0
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        loadPricingData();
+                        showSuccessMessage(`Pricing item ${action}d successfully!`);
+                    } else {
+                        showErrorMessage('Failed to update pricing status: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showErrorMessage('Error updating pricing status: ' + error);
+                }
+            });
+        }
+    });
+}
+
+function refreshPricingData() {
+    loadPricingData();
+    showSuccessMessage('Pricing data refreshed!');
+}
+
+function exportPricingData(format = 'csv') {
+    if (format === 'csv') {
+        window.open('api/export_pricing.php?format=csv', '_blank');
+    } else if (format === 'pdf') {
+        window.open('api/export_pricing.php?format=pdf', '_blank');
+    } else {
+        showErrorMessage('Invalid export format');
+    }
+}
+
+function showAddPricingModal() {
+    showErrorMessage('Add new pricing feature coming soon!');
+}
+
+function showPricingError(message) {
+    $('#pricingTableBody').html(`<tr><td colspan="6" class="text-center text-danger">${message}</td></tr>`);
+}
+
+function showSuccessMessage(message) {
+    Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: message,
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+    });
+}
+
+function showErrorMessage(message) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: message,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#dc3545'
+    });
+}
+
+// Initialize dropdown functionality
+function initializeDropdowns() {
+    // Ensure dropdowns work with both Bootstrap 4 and 5
+    $('.dropdown-toggle').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const $dropdown = $(this).closest('.dropdown');
+        const $menu = $dropdown.find('.dropdown-menu');
+        
+        // Close other dropdowns
+        $('.dropdown-menu').not($menu).removeClass('show');
+        $('.dropdown').not($dropdown).removeClass('show');
+        
+        // Toggle current dropdown
+        $menu.toggleClass('show');
+        $dropdown.toggleClass('show');
+    });
+    
+    // Close dropdown when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.dropdown').length) {
+            $('.dropdown-menu').removeClass('show');
+            $('.dropdown').removeClass('show');
+        }
+    });
+    
+    // Close dropdown when clicking on dropdown items
+    $('.dropdown-item').on('click', function() {
+        $('.dropdown-menu').removeClass('show');
+        $('.dropdown').removeClass('show');
+    });
+}
 </script>
 
 <style>
@@ -489,6 +917,79 @@ $(document).ready(function() {
 
 .text-light {
     color: #5a5c69 !important;
+}
+
+/* Dropdown Styles */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1000;
+    min-width: 200px;
+    padding: 0.5rem 0;
+    margin: 0.125rem 0 0;
+    font-size: 0.875rem;
+    color: #212529;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.25rem 1rem;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    text-decoration: none;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    color: #16181b;
+    text-decoration: none;
+    background-color: #f8f9fa;
+}
+
+.dropdown-header {
+    display: block;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0;
+    font-size: 0.75rem;
+    color: #6c757d;
+    white-space: nowrap;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.dropdown-divider {
+    height: 0;
+    margin: 0.5rem 0;
+    overflow: hidden;
+    border-top: 1px solid #e9ecef;
+}
+
+.dropdown-toggle::after {
+    display: none;
+}
+
+.dropdown.no-arrow .dropdown-toggle::after {
+    display: none;
 }
 
 
