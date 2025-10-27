@@ -116,6 +116,22 @@ include('includes/navbar.php');
             color: white;
         }
 
+        /* Document Type Badge Styling */
+        .badge-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+        }
+
+        .badge-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .badge-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+        }
+
         /* Mobile Responsiveness for Action Buttons */
         @media (max-width: 768px) {
             .modern-action-btn {
@@ -218,6 +234,49 @@ include('includes/navbar.php');
                 padding: 0.5rem 0.75rem !important;
             }
         }
+
+        /* Table Responsiveness for Document Type Column */
+        @media (max-width: 1200px) {
+            .table th:nth-child(6),
+            .table td:nth-child(6) {
+                min-width: 120px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .table th:nth-child(6),
+            .table td:nth-child(6) {
+                min-width: 100px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .table th:nth-child(6),
+            .table td:nth-child(6) {
+                min-width: 90px;
+            }
+            
+            .badge {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .table th:nth-child(6),
+            .table td:nth-child(6) {
+                min-width: 80px;
+            }
+            
+            .badge {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.4rem;
+            }
+            
+            .badge i {
+                font-size: 0.6rem;
+            }
+        }
         </style>
 
         <div class="card-body">
@@ -228,8 +287,9 @@ include('includes/navbar.php');
                             <th>#</th>
                             <th>Registration Date</th>
                             <th>Name</th>
-                            <th>Gender</th>
+                            <th>Sex</th>
                             <th>Type of Request</th>
+                            <th>Document Type</th>
                             <th>Contact Number</th>
                             <th>Email</th>
                             <th>Status</th>
@@ -304,7 +364,7 @@ include('includes/navbar.php');
                             die("Connection failed: " . mysqli_connect_error());
                         }
 
-                        $query = "SELECT * FROM reqtracking_tbl WHERE status != 'Approved'";
+                        $query = "SELECT *, document_type FROM reqtracking_tbl WHERE status != 'Approved'";
                         $query_run = mysqli_query($conn, $query);
 
                         // Check if the query was executed successfully
@@ -362,6 +422,31 @@ include('includes/navbar.php');
                                         </span>
                                     </td>
                                     <td><?php echo $row['type_request']; ?></td>
+                                    <td>
+                                        <?php
+                                        $document_type = $row['document_type'] ?? 'PSA';
+                                        $doc_type_class = '';
+                                        $doc_type_icon = '';
+                                        
+                                        switch($document_type) {
+                                            case 'LCRO':
+                                                $doc_type_class = 'badge-info';
+                                                $doc_type_icon = 'fas fa-building';
+                                                break;
+                                            case 'PSA':
+                                                $doc_type_class = 'badge-success';
+                                                $doc_type_icon = 'fas fa-certificate';
+                                                break;
+                                            default:
+                                                $doc_type_class = 'badge-secondary';
+                                                $doc_type_icon = 'fas fa-question';
+                                                break;
+                                        }
+                                        ?>
+                                        <span class="badge <?php echo $doc_type_class; ?>">
+                                            <i class="<?php echo $doc_type_icon; ?>"></i> <?php echo $document_type; ?>
+                                        </span>
+                                    </td>
                                     <td><?php echo $contact_no; ?></td>
                                     <td><?php echo $email; ?></td>
                                     <td><?php echo $row['status']; ?></td>
@@ -388,9 +473,8 @@ include('includes/navbar.php');
                                                         <p><strong>Contact Number:</strong> <?php echo $contact_no; ?></p>
                                                         <input type="hidden" name="contact_no" value="<?php echo $contact_no; ?>">
                                                       <textarea class="form-control" rows="4" name="sms_message" placeholder="Enter SMS message"><?php
-                                                      echo "Good Day " . $row['registrar_name'] . "! Your Request Has Been Successfully Approved, Civil Documents Requested " . $row['type_request'] . "! Please note that the estimated waiting time for processing is 14 working days.\n";
-
-                                                      echo "We will notify you as soon as the requested civil documents arrive at the MCRO Office.\n\n";
+                                                      echo "Good Day " . $row['registrar_name'] . "! Your Request Has Been Successfully Approved, Civil Documents Requested " . $row['document_type'] . " " . $row['type_request'] . "! Please note that the estimated waiting time for processing is 20 working days.\n";
+                                                        echo "We will notify you as soon as the requested " . $row['document_type'] . " " . $row['type_request'] . " arrive at the MCRO Office.\n\n";
                                                       echo "Sincerely,\n";
                                                       echo "THE MCRO BOTOLAN TEAM";
                                                     ?>

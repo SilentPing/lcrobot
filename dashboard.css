@@ -114,7 +114,7 @@ header .navbar ul li a:hover{
     justify-content: space-between;
     min-height: 100vh;
     overflow: hidden;
-    background: linear-gradient(rgba(0, 0, 255, .7), rgba(0, 0, 255, .7)), url('images/civreg.jpg') no-repeat;
+    background: linear-gradient(rgba(0, 0, 255, .7), rgba(0, 0, 255, .7)), url('images/lcrobot.png') no-repeat;
     background-size: 85%;
     background-position: center;
     position: relative; /* Add position relative */

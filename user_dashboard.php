@@ -135,25 +135,122 @@ if ($row = mysqli_fetch_assoc($result)) {
             margin-top: 10px;
         }
 
-  /* Increase the width of the accordion container */
+  /* FAQ Section Styling - Improved Readability */
+  .review {
+    padding: 60px 0;
+    background-color: #f8f9fa;
+  }
+
+  .review .heading {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color:rgb(255, 255, 255);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .review .description {
+    font-size: 2.2rem;
+    color: rgb(255, 255, 255);
+    text-align: center;
+    margin-bottom: 40px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .accordion {
-    width: 100%; /* You can adjust the width as needed */
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
   }
 
-  /* Adjust the height of the accordion items */
+  /* Accordion items with better spacing */
   .accordion-item {
-    margin-bottom: 10px; /* Add some space between accordion items */
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
   }
 
-  /* Customize the font size and padding of accordion buttons */
+  /* Accordion buttons with larger, more readable text */
   .accordion-button {
-    font-size: 18px; /* You can adjust the font size */
-    padding: 10px; /* You can adjust the padding */
+    font-size: 20px;
+    font-weight: 600;
+    padding: 20px 25px;
+    line-height: 1.4;
+    background-color: #f8f9fa;
+    border: none;
+    color: #333;
+    transition: all 0.3s ease;
   }
 
-  /* Customize the padding of accordion bodies */
+  .accordion-button:not(.collapsed) {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    box-shadow: none;
+  }
+
+  .accordion-button:focus {
+    box-shadow: 0 0 0 0.25rem rgba(25, 118, 210, 0.25);
+  }
+
+  .accordion-button:hover {
+    background-color: #e9ecef;
+  }
+
+  .accordion-button:not(.collapsed):hover {
+    background-color: #bbdefb;
+  }
+
+  /* Accordion body with better typography and spacing */
   .accordion-body {
-    padding: 15px; /* You can adjust the padding */
+    padding: 25px 30px;
+    font-size: 16px;
+    line-height: 1.6;
+    background-color: #ffffff;
+    color: #333;
+  }
+
+  /* Better styling for content inside accordion body */
+  .accordion-body strong {
+    font-size: 17px;
+    color: #1976d2;
+    font-weight: 600;
+  }
+
+  /* Responsive design for mobile devices */
+  @media (max-width: 768px) {
+    .accordion-button {
+      font-size: 18px;
+      padding: 18px 20px;
+    }
+    
+    .accordion-body {
+      padding: 20px 25px;
+      font-size: 15px;
+    }
+    
+    .accordion-body strong {
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .accordion-button {
+      font-size: 16px;
+      padding: 15px 18px;
+    }
+    
+    .accordion-body {
+      padding: 18px 20px;
+      font-size: 14px;
+    }
+    
+    .accordion-body strong {
+      font-size: 15px;
+    }
   }
 
     .certificate-header {
@@ -433,7 +530,8 @@ if ($row = mysqli_fetch_assoc($result)) {
     <h1 class="heading">Frequently Asked Questions</h1>
     <p class="description">Looking for information about Civil Registration. This section provides answers to your common questions about Civil Records, Registration and Documents</p>
 
-   <div class="accordion accordion-flush" id="accordionFlushExample">
+   <div class="container-fluid px-4">
+     <div class="accordion accordion-flush" id="accordionFlushExample">
   <div class="accordion-item">
     <h2 class="accordion-header">
       <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
@@ -526,6 +624,7 @@ if ($row = mysqli_fetch_assoc($result)) {
       <div class="accordion-body"><strong>This is the process of acquiring the certified true copy (CTC) or Local Civil Registry (LCR) copy of the Certificates of Live Birth</strong></div>
     </div>
   </div>
+</div>
 </div>
 
 </section>

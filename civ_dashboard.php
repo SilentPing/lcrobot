@@ -15,7 +15,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BMCROP</title>
-    <link rel="icon" href="images/civ.png" type="images/png">
+    <link rel="icon" href="images/lcrobot.png" type="images/png">
 
     <!-- font awesome cdn link  -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -64,6 +64,67 @@
     padding: 15px; /* You can adjust the padding */
   }
 
+  /* Equal height cards for Civil Registry Documents section */
+  .service .box-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  .service .box {
+    flex: 1 1 300px; /* flex-grow, flex-shrink, flex-basis */
+    min-height: 400px; /* Set minimum height */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+
+  .service .box:hover {
+    transform: translateY(-0.5rem);
+  }
+
+  /* Content area that grows to fill available space */
+  .service .box .box-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Ensure text content takes up available space */
+  .service .box p {
+    flex-grow: 1;
+    margin-bottom: 1rem;
+  }
+
+  /* Style for buttons and badges at the bottom */
+  .service .box .box-actions {
+    margin-top: auto;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .service .box {
+      min-height: 350px;
+      flex: 1 1 100%;
+    }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .service .box {
+      flex: 1 1 45%;
+    }
+  }
+
+  @media (min-width: 1025px) {
+    .service .box {
+      flex: 1 1 30%;
+    }
+  }
 
     </style>
 
@@ -85,7 +146,7 @@
     <!-- Logo aligned to the left -->
     <li class="nav-item me-3">
         <a href="#home" class="nav-link px-0 link-secondary">
-            <img src="images/civ.png" alt="Logo" width="40" height="40">
+            <img src="images/lcrobot.png" alt="Logo" width="40" height="40">
         </a>
     </li>
 
@@ -112,7 +173,7 @@
     <div class="content">
         <span>Are you Looking for Civil Documents ?</span>
         <h3>we are here for you!</h3>
-        <p>Request your Document now Here at Botolan Municipal Civil Registrar</p>
+        <p>Request your Document now Here at Local Civil Registry of Botolan</p>
     </div>
 
     <div class="image">
@@ -174,29 +235,57 @@
  <div class="box-container">
 
     <div class="box">
-        <img src="images/birth1.svg" alt="">
-        <h3>Birth Certificate</h3>
-        <p>Birth certificate is a vital record documenting a person's birth, either as the original document or a certified copy</p>
-        
-
+        <div class="box-content">
+            <img src="images/birth1.svg" alt="">
+            <h3>Birth Certificate</h3>
+            <p>Birth certificate is a vital record documenting a person's birth, either as the original document or a certified copy</p>
+        </div>
     </div>
 
     <div class="box">
-        <img src="images/marriage1.svg" alt="">
-        <h3>Marriage Certificate</h3>
-        <p>Marriage certificate is an official document confirming marriage, issued by a government official after civil registration</p>
+        <div class="box-content">
+            <img src="images/marriage1.svg" alt="">
+            <h3>Marriage Certificate</h3>
+            <p>Marriage certificate is an official document confirming marriage, issued by a government official after civil registration</p>
+        </div>
     </div>
 
     <div class="box">
-        <img src="images/death1.svg" alt="">
-        <h3>Death Certificate</h3>
-        <p>A death certificate is a legal document from a medical practitioner or a government civil registration office stating the date, location, and cause of a person's death</p>
+        <div class="box-content">
+            <img src="images/death1.svg" alt="">
+            <h3>Death Certificate</h3>
+            <p>A death certificate is a legal document from a medical practitioner or a government civil registration office stating the date, location, and cause of a person's death</p>
+        </div>
     </div>
 
     <div class="box">
-        <img src="images/cen1.svg" alt="">
-        <h3>CENOMAR</h3>
-        <p>A Certificate of No Marriage Record (CENOMAR) is simply what its name implies. It is a certification issued by the PSA stating that a person has not contracted any marriage</p>
+        <div class="box-content">
+            <img src="images/cen1.svg" alt="">
+            <h3>CENOMAR</h3>
+            <p>A Certificate of No Marriage Record (CENOMAR) is simply what its name implies. It is a certification issued by the PSA stating that a person has not contracted any marriage</p>
+        </div>
+    </div>
+
+    <div class="box">
+        <div class="box-content">
+            <img src="images/birth1.svg" alt="">
+            <h3>Timely Birth Registration</h3>
+            <p>Download the Excel form, fill it up, and submit for birth certificate processing. Perfect for Indigenous People (IP) in Botolan.</p>
+        </div>
+        <div class="box-actions">
+            <div class="document-type-badges mb-2">
+                <span class="badge bg-success">IP Registration</span>
+                <span class="badge bg-success">Excel Form</span>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="api/download_excel_template.php" class="btn flex-fill">
+                    <i class="fas fa-download me-2"></i>Download Form
+                </a>
+                <a href="timely_birth_upload.php" class="btn flex-fill">
+                    <i class="fas fa-upload me-2"></i>Submit Form
+                </a>
+            </div>
+        </div>
     </div>
 
  </div>
@@ -409,7 +498,7 @@
 
         <div class="box">
             <h3>Civil Registrar of Botolan</h3>
-            <p>2023</p>
+            <p>2025</p>
         </div>
 
         <div class="box">
@@ -428,7 +517,7 @@
 
     </div>
 
-    <h1 class="credit"><a href="https://web.facebook.com/mcrobotolan/?locale=fr_FR&_rdc=1&_rdr">MCRO</a> All Rights Reserve</h1>
+    <h1 class="credit"><a href="https://web.facebook.com/mcrobotolan/?locale=fr_FR&_rdc=1&_rdr">LCRO</a> All Rights Reserve</h1>
 
 </div>
 

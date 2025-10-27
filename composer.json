@@ -1,6 +1,13 @@
 {
     "require": {
         "infobip/infobip-api-php-client": "^5.1",
-        "twilio/sdk": "^7.12"
+        "twilio/sdk": "^7.12",
+        "phpoffice/phpspreadsheet": "^1.29",
+        "phpmailer/phpmailer": "^6.8"
+    },
+    "config": {
+        "platform": {
+            "php": "8.0.0"
+        }
     }
 }

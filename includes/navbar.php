@@ -38,6 +38,7 @@
     <span>Civil Request</span></a>
 </li>
 
+
 <li class="nav-item">
   <a class="nav-link" href="qr_dashboard.php">
     <i class="fas fa-qrcode"></i>
@@ -100,6 +101,12 @@
   <a class="nav-link" href="total_users.php">
     <i class="bi bi-people-fill"></i>
     <span>Total Users</span></a>
+</li>
+
+<li class="nav-item">
+  <a class="nav-link" href="timely_birth_records.php">
+    <i class="fas fa-baby"></i>
+    <span>Timely Birth Records</span></a>
 </li>
 
 <!-- Heading -->
