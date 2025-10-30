@@ -588,13 +588,23 @@ function getMarriageForm() {
         <h6 class="text-primary mb-3"><i class="bi bi-person-lines-fill"></i> Applicant Contact Information</h6>
         
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="mb-3">
                     <label for="applicant_name" class="form-label">Applicant Full Name *</label>
                     <input type="text" class="form-control" id="applicant_name" name="applicant_name" required placeholder="Enter applicant\'s full name">
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="gender" class="form-label">Applicant Gender *</label>
+                    <select class="form-control" id="gender" name="gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
                 <div class="mb-3">
                     <label for="contact_no" class="form-label">Contact Number * <small class="text-muted">(Primary communication method)</small></label>
                     <input type="tel" class="form-control" id="contact_no" name="contact_no" required placeholder="09XXXXXXXXX" pattern="09[0-9]{9}">

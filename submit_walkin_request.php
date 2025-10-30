@@ -86,7 +86,7 @@ function validateWalkinRequest($data, $formType) {
             $requiredFields = [
                 'husband_ln', 'husband_fn', 'husband_mn', 'maiden_wife_ln', 'maiden_wife_fn', 
                 'maiden_wife_mn', 'pob_country', 'pob_province', 'pob_municipality', 
-                'dob', 'place_of_marriage', 'purpose_of_request', 'applicant_name', 'contact_no'
+                'dob', 'place_of_marriage', 'purpose_of_request', 'applicant_name', 'contact_no', 'gender'
             ];
             break;
         default:
@@ -207,7 +207,7 @@ function submitBirthRequest($data) {
         if ($conn->query($civRecordSql) === TRUE) {
             // Insert into reqtracking_tbl with applicant's contact info
             $email = !empty($data['email']) ? $data['email'] : '';
-            $gender = $data['gender'] ?? 'Male'; // Use gender field for death requests
+            $gender = $data['gender']; // Gender is now required for all walk-in forms
             $reqTrackingSql = "INSERT INTO reqtracking_tbl (type_request, registration_date, registrar_name, user_id, status, contact_no, email, gender) VALUES ('{$data['type_request']}', '$registration_date', '{$data['applicant_name']}', '{$data['id_user']}', 'Pending', '{$data['contact_no']}', '$email', '$gender')";
             $conn->query($reqTrackingSql);
             
@@ -262,7 +262,7 @@ function submitDeathRequest($data) {
         if ($conn->query($civRecordSql) === TRUE) {
             // Insert into reqtracking_tbl with applicant's contact info
             $email = !empty($data['email']) ? $data['email'] : '';
-            $gender = $data['gender'] ?? 'Male'; // Use gender field for death requests
+            $gender = $data['gender']; // Gender is now required for all walk-in forms
             $reqTrackingSql = "INSERT INTO reqtracking_tbl (type_request, registration_date, registrar_name, user_id, status, contact_no, email, gender) VALUES ('{$data['type_request']}', '$registration_date', '{$data['applicant_name']}', '{$data['id_user']}', 'Pending', '{$data['contact_no']}', '$email', '$gender')";
             $conn->query($reqTrackingSql);
             
@@ -320,7 +320,7 @@ function submitMarriageRequest($data) {
         if ($conn->query($civRecordSql) === TRUE) {
             // Insert into reqtracking_tbl with applicant's contact info
             $email = !empty($data['email']) ? $data['email'] : '';
-            $gender = $data['gender'] ?? 'Male'; // Use gender field for death requests
+            $gender = $data['gender']; // Gender is now required for all walk-in forms
             $reqTrackingSql = "INSERT INTO reqtracking_tbl (type_request, registration_date, registrar_name, user_id, status, contact_no, email, gender) VALUES ('{$data['type_request']}', '$registration_date', '{$data['applicant_name']}', '{$data['id_user']}', 'Pending', '{$data['contact_no']}', '$email', '$gender')";
             $conn->query($reqTrackingSql);
             
