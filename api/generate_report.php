@@ -73,7 +73,7 @@ function generateReportData($startDate, $endDate) {
     
     $data = [];
     
-    // Single optimized query to get all data at once
+    // Query for requests created in the date range
     $query = "SELECT 
         COUNT(*) as total_requests,
         type_request,
@@ -115,6 +115,27 @@ function generateReportData($startDate, $endDate) {
                 }
                 $data['daily_breakdown'][$row['date']] += $row['total_requests'];
             }
+        }
+    }
+    
+    // For daily reports, show current status counts (regardless of creation date)
+    // This ensures "Today's Report" shows current workload, not just requests created today
+    if ($startDate == $endDate) {
+        // Get current status counts
+        $statusQuery = "SELECT status, COUNT(*) as status_count FROM reqtracking_tbl WHERE status IN ('Pending', 'Approved', 'Rejected') GROUP BY status";
+        $statusResult = mysqli_query($conn, $statusQuery);
+        if ($statusResult) {
+            while ($statusRow = mysqli_fetch_assoc($statusResult)) {
+                $data['by_status'][$statusRow['status']] = (int)$statusRow['status_count'];
+            }
+        }
+        
+        // Update total requests to include all current requests for consistency
+        $totalQuery = "SELECT COUNT(*) as total_count FROM reqtracking_tbl WHERE status IN ('Pending', 'Approved', 'Rejected')";
+        $totalResult = mysqli_query($conn, $totalQuery);
+        if ($totalResult) {
+            $totalRow = mysqli_fetch_assoc($totalResult);
+            $data['total_requests'] = (int)$totalRow['total_count'];
         }
     }
     
